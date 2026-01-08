@@ -29,16 +29,126 @@ The library operates as a multi-layered middleware, validating inputs and output
 
 ---
 
-## 🚀 Features
+## 🚀 Detailed Features & Usage
 
-- **🛡️ Wall Guard**: A flexible validation engine supporting sequential validators for safety, length, and format.
-- **🧠 Context Management**: Advanced NLP-based filtering to ensure responses stay within your defined domain boundaries.
-- **📚 RAG Integration**: Built-in Knowledge Retrieval using ChromaDB to reduce hallucinations and ground answers.
-- **✅ Structured Output**: Enforce strict output schemas (Pydantic, JSON Schema, RAIL).
-- **📊 Response Scoring**: Evaluate response quality with metrics like Cosine Similarity, ROUGE, and BLEU.
-- **📈 Comprehensive Monitoring**: Automatic tracking of every interaction, including latency, success rates, and validation failures.
-- **👀 Visual Analytics**: Generate 3D embeddings, word clouds, and interactive dashboards to visualize your LLM's performance.
-- **🔌 Framework Ready**: Seamless integration with **LangChain** and **LangGraph**.
+### 🛡️ Wall Guard Logic
+
+**Wall Guard** creates a secure pipeline for your LLM data. It chains multiple **Validators** together, and if any validator fails, an **OnFailAction** (like raising an exception or re-asking the LLM) is triggered.
+
+![Wall Guard Logic](docs/images/guard_logic.png)
+
+**Key Components**:
+-   **Validators**: Reusable rules (e.g., `MinLength`, `JsonSchema`, `ToxicityCheck`).
+-   **OnFailAction**:
+    -   `EXCEPTION`: Stop immediately.
+    -   `REASK`: Ask the LLM to try again with feedback.
+    -   `FIX`: Attempt to programmatically fix the output.
+
+**Example**:
+```python
+from wall_library import WallGuard, OnFailAction
+from wall_library.validator_base import Validator, register_validator, FailResult, PassResult
+
+# 1. Define custom validators
+@register_validator("no_sql_injection")
+class SQLInjectionValidator(Validator):
+    def _validate(self, value, metadata):
+        if "DROP TABLE" in value.upper():
+            return FailResult(error_message="Potential SQL Injection detected!")
+        return PassResult()
+
+# 2. Build the Guard
+guard = WallGuard().use(
+    (SQLInjectionValidator, {}, OnFailAction.EXCEPTION)
+)
+
+# 3. Validate
+try:
+    guard.validate("SELECT * FROM users; DROP TABLE users;")
+except Exception as e:
+    print(f"Blocked: {e}")
+```
+
+---
+
+### 🧠 NLP Context Manager
+
+**Context Manager** ensures your LLM stays "in lane". It uses an NLP engine to analyze the semantic meaning of user queries and LLM responses, blocking anything that deviates from your approved topics.
+
+![Context Manager Flow](docs/images/context_flow.png)
+
+**Capabilities**:
+-   **Keyword Matching**: Hard blocks on forbidden words.
+-   **Semantic Similarity**: Soft blocks based on topic distance (using embeddings).
+-   **Topic Lists**: Allow-lists for specific domains (e.g., "Healthcare", "Legal").
+
+**Example**:
+```python
+from wall_library.nlp import ContextManager
+
+# Initialize with approved topics
+ctx = ContextManager()
+ctx.add_keywords(["banking", "finance", "investment"])
+
+# Check content
+query = "How do I bake a cake?"
+if not ctx.check_context(query):
+     print("Blocked: Query is off-topic (not finance related).")
+```
+
+---
+
+### 📚 RAG Retrieval Loop
+
+**RAG (Retrieval-Augmented Generation)** connects your LLM to your private data. Wall Library includes a built-in RAG system powered by **ChromaDB**.
+
+![RAG Loop](docs/images/rag_flow.png)
+
+**Workflow**:
+1.  **Query Embedding**: Convert user question to vector.
+2.  **Vector Search**: Find nearest neighbors in ChromaDB.
+3.  **Context Injection**: Retrieve top-k documents and feed them to the LLM.
+
+**Example**:
+```python
+from wall_library.rag import ChromaDBClient, RAGRetriever
+
+# 1. Setup Vector DB
+db = ChromaDBClient(collection_name="company_policy")
+db.add_docs(["Remote work is allowed on Fridays.", "Offices open at 9 AM."])
+
+# 2. Retrieve
+rag = RAGRetriever(chromadb_client=db)
+context = rag.retrieve("When can I work from home?", top_k=1)
+
+print(f"Retrieved Policy: {context[0]['document']}")
+```
+
+---
+
+### 📊 Response Scoring & Metrics
+
+**Response Scorer** provides quantitative quality control. It compares the LLM's actual output against a reference (ground truth) or uses reference-free metrics to assign a quality score.
+
+![Scoring Metrics Flow](docs/images/scoring_flow.png)
+
+**Supported Metrics**:
+-   **ROUGE**: Measures n-gram overlap (great for summarization).
+-   **BLEU**: Measures precision (great for translation).
+-   **Cosine Similarity**: Measures semantic closeness.
+
+**Example**:
+```python
+from wall_library.scoring import ResponseScorer
+
+scorer = ResponseScorer()
+actual = "Paris is the capital of France."
+expected = "The capital of France is Paris."
+
+# Calculate scores
+scores = scorer.score(actual, expected)
+print(f"ROUGE Score: {scores['rouge1']}")
+```
 
 ---
 
@@ -66,108 +176,6 @@ pip install wall-library[langgraph]
 # For all optional features (recommended for dev)
 pip install wall-library[all]
 ```
-
----
-
-## ⚡ Quick Start
-
-### 1. Basic Validation with Wall Guard
-
-Directly validate string outputs using the `WallGuard`.
-
-```python
-from wall_library import WallGuard, OnFailAction
-from wall_library.validator_base import Validator, register_validator
-from wall_library.classes.validation.validation_result import PassResult, FailResult
-
-# Define a custom validator
-@register_validator("min_length")
-class MinLengthValidator(Validator):
-    def __init__(self, min_length: int = 10, **kwargs):
-        super().__init__(require_rc=False, **kwargs)
-        self.min_length = min_length
-    
-    def _validate(self, value, metadata):
-        if len(value) < self.min_length:
-            return FailResult(error_message=f"Too short: {len(value)} < {self.min_length}", metadata=metadata)
-        return PassResult(metadata=metadata)
-
-# Initialize Guard
-guard = WallGuard().use(
-    (MinLengthValidator, {"min_length": 10}, OnFailAction.EXCEPTION)
-)
-
-# Validate
-try:
-    result = guard.validate("Hello World!") # Passes
-    print("Validation Passed:", result.validation_passed)
-except Exception as e:
-    print("Validation Failed:", e)
-```
-
-### 2. Context Filtering
-
-Ensure your LLM stays on topic.
-
-```python
-from wall_library.nlp import ContextManager
-
-context_manager = ContextManager()
-context_manager.add_keywords(["Python", "programming", "AI"])
-context_manager.add_string_list(["Machine Learning", "Data Science"])
-
-text = "Python is a great programming language."
-is_valid = context_manager.check_context(text, threshold=0.7)
-
-print(f"Is within context: {is_valid}")
-```
-
-### 3. RAG Retrieval (ChromaDB)
-
-Retrieve knowledge to ground your LLM responses.
-
-```python
-from wall_library.rag import ChromaDBClient, RAGRetriever
-
-# Setup ChromaDB
-client = ChromaDBClient(collection_name="knowledge_base")
-client.add_qa_pairs(
-    questions=["What is Wall Library?"],
-    answers=["Wall Library is a professional LLM validation framework."]
-)
-
-# Retrieve
-retriever = RAGRetriever(chromadb_client=client)
-results = retriever.retrieve("Tell me about Wall Library", top_k=1)
-
-print("Retrieved Context:", results[0]['document'])
-```
-
----
-
-## 📖 Detailed Documentation
-
-### Wall Guard & Validators
-The core of the library. You can chain multiple validators.
-- **OnFailAction**: Control what happens on failure: `EXCEPTION`, `FILTER`, `REFRAIN`, `REASK`, `FIX`.
-- **Validators**: Implement your own or use built-ins.
-
-### Monitoring & Visualizations
-Track your application's health.
-
-```python
-from wall_library.monitoring import LLMMonitor
-from wall_library.visualization import WallVisualizer
-
-monitor = LLMMonitor()
-monitor.track_call(input_data="Query", output="Response", latency=0.2)
-
-# Generate visualizations
-viz = WallVisualizer(output_dir="visualizations")
-viz.visualize_monitoring_dashboard(monitor.get_stats())
-```
-
-See the `examples/` directory for complex use-cases involving LangChain agents and full application flows.
 
 ---
 
