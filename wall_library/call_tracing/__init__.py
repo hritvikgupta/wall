@@ -18,3 +18,4 @@ def trace_call(call_name: str, **kwargs) -> Dict[str, Any]:
         "parameters": kwargs,
     }
 
+

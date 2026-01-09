@@ -80,3 +80,4 @@ def set_tracer_context(context: Optional[Dict[str, Any]]):
     """Set tracer context."""
     _tracer_context.set(context)
 
+

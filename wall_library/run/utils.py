@@ -29,3 +29,4 @@ def messages_source(messages: List[Dict[str, Any]]) -> Optional[str]:
 
     return " ".join(texts)
 
+

@@ -30,3 +30,4 @@ def get_jwt_token(rc: Optional[RC] = None) -> Optional[str]:
         logger.warning(f"Failed to get JWT token: {e}")
         return None
 
+

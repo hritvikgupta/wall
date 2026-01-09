@@ -17,3 +17,4 @@ def generate_docs(module_or_class: Any) -> str:
         return module_or_class.__doc__ or ""
     return ""
 
+

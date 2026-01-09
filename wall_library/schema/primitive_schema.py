@@ -39,3 +39,4 @@ def primitive_to_schema(primitive_type: Type) -> Dict[str, Any]:
     # Default to string
     return {"type": "string"}
 
+

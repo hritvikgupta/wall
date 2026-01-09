@@ -31,3 +31,4 @@ class JSONFormatter(BaseFormatter):
         """
         return json.loads(text)
 
+

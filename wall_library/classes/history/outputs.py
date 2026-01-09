@@ -15,3 +15,4 @@ class Outputs:
     def __repr__(self) -> str:
         return f"Outputs(validated={self.validated_output is not None})"
 
+

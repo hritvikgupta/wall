@@ -24,3 +24,4 @@ def get_formatter(formatter_type: str) -> BaseFormatter:
     else:
         raise ValueError(f"Unknown formatter type: {formatter_type}")
 
+

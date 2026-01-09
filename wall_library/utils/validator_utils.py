@@ -48,3 +48,4 @@ def verify_metadata_requirements(validator: Validator, metadata: Dict[str, Any])
     required_keys = getattr(validator, "required_metadata_keys", [])
     return all(key in metadata for key in required_keys)
 
+

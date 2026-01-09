@@ -40,3 +40,4 @@ def generate_embeddings(
         logger.error(f"Failed to generate embeddings: {e}")
         raise
 
+

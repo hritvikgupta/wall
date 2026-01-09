@@ -39,3 +39,4 @@ class Stack(Generic[T]):
     def __repr__(self) -> str:
         return f"Stack({self._items})"
 
+

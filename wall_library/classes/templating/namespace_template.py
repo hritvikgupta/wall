@@ -36,3 +36,4 @@ class NamespaceTemplate:
         """
         self.namespace[key] = value
 
+

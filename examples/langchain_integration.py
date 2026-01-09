@@ -18,3 +18,4 @@ try:
 except ImportError:
     print("LangChain not installed. Install with: pip install wall-library[langchain]")
 
+

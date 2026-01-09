@@ -19,3 +19,4 @@ class DefaultJSONEncoder(json.JSONEncoder):
         else:
             return super().default(obj)
 
+

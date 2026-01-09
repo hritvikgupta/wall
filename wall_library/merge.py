@@ -42,3 +42,4 @@ def merge_configs(configs: List[Dict[str, Any]]) -> Dict[str, Any]:
         merged.update(config)
     return merged
 
+

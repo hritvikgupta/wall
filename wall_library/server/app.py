@@ -35,3 +35,4 @@ def create_app(config_path: Optional[str] = None) -> Flask:
 
     return app
 
+

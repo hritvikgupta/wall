@@ -78,3 +78,4 @@ class MLFlowInstrumentor:
         except Exception as e:
             logger.warning(f"Failed to log to MLflow: {e}")
 
+

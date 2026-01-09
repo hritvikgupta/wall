@@ -14,3 +14,4 @@ class Credentials:
     def __repr__(self) -> str:
         return f"Credentials(api_key={'***' if self.api_key else None})"
 
+

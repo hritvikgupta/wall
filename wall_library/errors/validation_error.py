@@ -14,3 +14,4 @@ class ValidationError(Exception):
     def __repr__(self) -> str:
         return f"ValidationError({self.message})"
 
+

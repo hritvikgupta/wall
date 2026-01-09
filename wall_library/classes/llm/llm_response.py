@@ -16,3 +16,4 @@ class LLMResponse:
     def __repr__(self) -> str:
         return f"LLMResponse(output={self.output[:50]}..., model={self.model})"
 
+

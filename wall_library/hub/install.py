@@ -47,3 +47,4 @@ def install(validator_id: str, destination: Optional[str] = None) -> bool:
         logger.error(f"Failed to install validator {validator_id}: {e}")
         return False
 
+

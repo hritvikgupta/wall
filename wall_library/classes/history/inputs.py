@@ -15,3 +15,4 @@ class Inputs:
     def __repr__(self) -> str:
         return f"Inputs(prompt={self.prompt})"
 
+

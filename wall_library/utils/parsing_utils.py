@@ -73,3 +73,4 @@ def prune_extra_keys(data: Dict[str, Any], schema: Dict[str, Any]) -> Dict[str, 
 
     return pruned
 
+

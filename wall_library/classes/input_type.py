@@ -12,3 +12,4 @@ class InputType(str, Enum):
 
 __all__ = ["InputType"]
 
+

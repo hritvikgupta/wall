@@ -42,3 +42,4 @@ def configure(
         logger.error(f"Failed to save config: {e}")
         raise typer.Exit(1)
 
+

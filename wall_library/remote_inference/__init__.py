@@ -6,3 +6,4 @@ from wall_library.remote_inference.remote_inference import (
 
 __all__ = ["get_use_remote_inference"]
 
+

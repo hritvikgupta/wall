@@ -32,3 +32,4 @@ def safe_get(data: Union[Dict, list, Any], *keys, default=None) -> Any:
     except (KeyError, IndexError, TypeError, AttributeError):
         return default
 
+

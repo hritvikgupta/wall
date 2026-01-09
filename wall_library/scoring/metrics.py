@@ -119,3 +119,4 @@ class CustomMetric(BaseMetric):
         # Normalize to [0, 1]
         return min(max(score, 0.0), 1.0)
 
+

@@ -57,3 +57,4 @@ class QAScorer:
         # Combined score
         return (query_answer_sim + answer_context_sim) / 2.0
 
+

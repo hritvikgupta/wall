@@ -21,3 +21,4 @@ class Serializable(ABC):
         """Create object from dictionary."""
         return cls(**data)
 
+

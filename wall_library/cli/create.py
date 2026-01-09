@@ -29,3 +29,4 @@ def create(
         logger.error(f"Failed to create config: {e}")
         raise typer.Exit(1)
 
+

@@ -29,3 +29,4 @@ class LogScope(str, Enum):
             return True
         return scope in enabled_scopes
 
+

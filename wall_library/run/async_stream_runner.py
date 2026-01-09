@@ -28,3 +28,4 @@ class AsyncStreamRunner(AsyncRunner):
         else:
             raise ValueError("Async API required for streaming")
 
+

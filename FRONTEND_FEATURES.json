@@ -1,0 +1,306 @@
+{
+  "features": [
+    {
+      "id": 1,
+      "name": "Wall Guard",
+      "icon": "🛡️",
+      "title": "Multi-Layer Validation",
+      "description": "Validates LLM responses with custom rules before they reach users",
+      "examples": {
+        "healthcare": {
+          "blocks": "This is a guaranteed cure for diabetes!",
+          "allows": "Common symptoms include increased thirst and frequent urination. Consult your doctor."
+        },
+        "finance": {
+          "blocks": "Invest all your money in this stock - guaranteed returns!",
+          "allows": "Investment strategies vary by risk tolerance. Consult a financial advisor."
+        },
+        "legal": {
+          "blocks": "I guarantee you'll win this case if you follow my advice.",
+          "allows": "Legal outcomes depend on many factors. Consult with a qualified attorney."
+        }
+      }
+    },
+    {
+      "id": 2,
+      "name": "Context Manager",
+      "icon": "🧠",
+      "title": "Stay in Your Lane",
+      "description": "Ensures responses stay within approved topics using NLP",
+      "examples": {
+        "healthcare": {
+          "inside": "Diabetes symptoms include increased thirst (0.85 similarity)",
+          "outside": "Here's a chocolate cake recipe (0.15 similarity)"
+        },
+        "finance": {
+          "inside": "Investment strategies for retirement planning (0.82 similarity)",
+          "outside": "How to bake a birthday cake (0.12 similarity)"
+        },
+        "ecommerce": {
+          "inside": "Product features and pricing information (0.88 similarity)",
+          "outside": "Medical advice about diabetes (0.18 similarity)"
+        }
+      }
+    },
+    {
+      "id": 3,
+      "name": "RAG Retriever",
+      "icon": "🔍",
+      "title": "Grounded in Knowledge",
+      "description": "Retrieves verified information from your knowledge base to prevent hallucinations",
+      "examples": {
+        "healthcare": {
+          "query": "What are diabetes symptoms?",
+          "retrieved": "Common symptoms include increased thirst, frequent urination... (Score: 0.92)"
+        },
+        "finance": {
+          "query": "What are retirement planning strategies?",
+          "retrieved": "401(k) contributions, IRA options, asset allocation... (Score: 0.89)"
+        },
+        "support": {
+          "query": "How do I return a product?",
+          "retrieved": "Return policy: 30-day window, original packaging required... (Score: 0.95)"
+        }
+      }
+    },
+    {
+      "id": 4,
+      "name": "Response Scorer",
+      "icon": "📊",
+      "title": "Quality Assurance",
+      "description": "Scores response quality using multiple metrics (ROUGE, BLEU, similarity)",
+      "examples": {
+        "high_quality": {
+          "response": "Diabetes symptoms include increased thirst, frequent urination, fatigue.",
+          "scores": "Cosine: 0.92, ROUGE: 0.88, BLEU: 0.85",
+          "status": "EXCELLENT"
+        },
+        "low_quality": {
+          "response": "Diabetes has symptoms.",
+          "scores": "Cosine: 0.35, ROUGE: 0.25, BLEU: 0.20",
+          "status": "POOR"
+        }
+      }
+    },
+    {
+      "id": 5,
+      "name": "LLM Monitor",
+      "icon": "📈",
+      "title": "Track Everything",
+      "description": "Monitors all LLM interactions for performance and analytics",
+      "metrics": {
+        "total_interactions": 1250,
+        "success_rate": "94%",
+        "avg_latency": "0.42s",
+        "errors": {
+          "ValidationError": "3%",
+          "TimeoutError": "2%",
+          "NetworkError": "1%"
+        }
+      }
+    },
+    {
+      "id": 6,
+      "name": "Visualization",
+      "icon": "📊",
+      "title": "See Your Data",
+      "description": "Interactive 3D graphs, word clouds, and dashboards",
+      "types": [
+        "3D Score Visualization - Plot responses in 3D space",
+        "Context Boundaries - Pie charts and similarity distributions",
+        "Word Clouds - Visualize keywords by frequency",
+        "Monitoring Dashboard - Comprehensive analytics"
+      ]
+    },
+    {
+      "id": 7,
+      "name": "OnFailActions",
+      "icon": "⚙️",
+      "title": "Smart Failure Handling",
+      "description": "8 different strategies for handling validation failures",
+      "actions": {
+        "EXCEPTION": {
+          "input": "Guaranteed cure for diabetes!",
+          "output": "Error raised, no response sent"
+        },
+        "FILTER": {
+          "input": "Symptoms include thirst. This is a guaranteed cure.",
+          "output": "Symptoms include thirst. (unsafe part removed)"
+        },
+        "REASK": {
+          "input": "100% effective treatment!",
+          "output": "Treatment has shown effectiveness in studies. Consult your doctor."
+        },
+        "FIX": {
+          "input": "Diabetes symptoms: thirst (too short)",
+          "output": "Diabetes symptoms: thirst. [IMPORTANT: Consult healthcare provider.]"
+        }
+      }
+    },
+    {
+      "id": 8,
+      "name": "Schema Systems",
+      "icon": "📐",
+      "title": "Structured Output",
+      "description": "Ensures LLM outputs match expected structure",
+      "examples": {
+        "healthcare": {
+          "schema": "PatientInfo {condition, symptoms[], severity, recommendation}",
+          "valid": "All fields present, correct types",
+          "invalid": "Missing 'severity' field"
+        },
+        "ecommerce": {
+          "schema": "ProductInfo {name, price, description, category}",
+          "valid": "All fields present",
+          "invalid": "Missing 'price' field"
+        },
+        "finance": {
+          "schema": "InvestmentAdvice {strategy, risk_level, timeframe, disclaimer}",
+          "valid": "All fields present",
+          "invalid": "Missing 'disclaimer' field"
+        }
+      }
+    },
+    {
+      "id": 9,
+      "name": "Framework Integration",
+      "icon": "🔗",
+      "title": "Works Everywhere",
+      "description": "Seamless integration with LangChain, LangGraph, and more",
+      "integrations": [
+        "LangChain - Convert guard to Runnable, use in chains",
+        "LangGraph - Create nodes with guard validation",
+        "LlamaIndex - Guardrails chat/query engines",
+        "MLflow - Experiment tracking and monitoring"
+      ]
+    },
+    {
+      "id": 10,
+      "name": "Streaming & Async",
+      "icon": "⚡",
+      "title": "Real-Time Processing",
+      "description": "Supports streaming and async operations",
+      "capabilities": [
+        "Streaming - Validate chunks as they arrive",
+        "Async - Non-blocking validation",
+        "Real-time safety checks",
+        "Concurrent processing"
+      ]
+    }
+  ],
+  "domains": {
+    "healthcare": {
+      "features": [
+        "Blocks dangerous medical claims",
+        "Ensures responses stay within medical boundaries",
+        "Validates structured patient information",
+        "Scores against medical guidelines"
+      ]
+    },
+    "finance": {
+      "features": [
+        "Blocks investment guarantees",
+        "Ensures compliance with financial regulations",
+        "Validates structured financial data",
+        "Scores against approved financial advice"
+      ]
+    },
+    "legal": {
+      "features": [
+        "Prevents unauthorized legal advice",
+        "Ensures responses stay within legal information boundaries",
+        "Validates structured legal documents",
+        "Scores against legal standards"
+      ]
+    },
+    "ecommerce": {
+      "features": [
+        "Blocks false product claims",
+        "Ensures accurate product information",
+        "Validates structured product data",
+        "Scores against product specifications"
+      ]
+    },
+    "education": {
+      "features": [
+        "Ensures accurate educational content",
+        "Validates structured course information",
+        "Scores against curriculum standards",
+        "Maintains educational boundaries"
+      ]
+    },
+    "support": {
+      "features": [
+        "Ensures accurate policy information",
+        "Validates structured support responses",
+        "Scores against support guidelines",
+        "Maintains brand voice consistency"
+      ]
+    }
+  },
+  "use_cases": [
+    {
+      "domain": "Healthcare Chatbot",
+      "input": "What are diabetes symptoms?",
+      "analysis": "Safety check ✅, Context check ✅, RAG retrieval ✅",
+      "output": "Common symptoms include increased thirst, frequent urination... (Safe, accurate, compliant)"
+    },
+    {
+      "domain": "Financial Advisor Bot",
+      "input": "What's the best investment?",
+      "analysis": "Blocks guarantees ✅, Retrieves verified strategies ✅",
+      "output": "Investment strategies vary. Consult a financial advisor... (Compliant, accurate)"
+    },
+    {
+      "domain": "E-commerce Assistant",
+      "input": "Is this product guaranteed to work?",
+      "analysis": "Blocks false claims ✅, Retrieves product info ✅",
+      "output": "Product features include... See customer reviews... (Accurate, compliant)"
+    },
+    {
+      "domain": "Legal Information Bot",
+      "input": "Can you guarantee I'll win my case?",
+      "analysis": "Blocks legal guarantees ✅, Provides information only ✅",
+      "output": "Legal outcomes depend on many factors. Consult an attorney... (Compliant, safe)"
+    }
+  ],
+  "stats": {
+    "total_features": "50+",
+    "categories": 12,
+    "onfail_actions": 8,
+    "scoring_metrics": 5,
+    "vector_databases": 3,
+    "framework_integrations": 4,
+    "visualization_types": 9,
+    "supported_domains": 6
+  },
+  "benefits": {
+    "safety": [
+      "Blocks dangerous, inappropriate, or false content",
+      "Prevents hallucinations and misinformation",
+      "Ensures compliance with regulations"
+    ],
+    "quality": [
+      "Scores response quality automatically",
+      "Ensures completeness and accuracy",
+      "Validates structure and format"
+    ],
+    "context": [
+      "Keeps responses within approved topics",
+      "Prevents off-topic responses",
+      "Maintains domain boundaries"
+    ],
+    "observability": [
+      "Tracks all interactions",
+      "Visualizes data with 3D graphs",
+      "Comprehensive monitoring dashboards"
+    ],
+    "production": [
+      "Framework integrations (LangChain, LangGraph)",
+      "Streaming and async support",
+      "REST API server",
+      "CLI tools"
+    ]
+  }
+}
+

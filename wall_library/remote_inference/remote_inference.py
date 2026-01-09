@@ -20,3 +20,4 @@ def get_use_remote_inference(rc: Optional[RC] = None) -> bool:
 
     return rc.use_remote_inference
 
+

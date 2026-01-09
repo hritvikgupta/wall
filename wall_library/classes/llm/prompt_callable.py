@@ -17,3 +17,4 @@ class PromptCallable:
     def __repr__(self) -> str:
         return f"PromptCallable(func={self.callable_func.__name__})"
 
+

@@ -29,3 +29,4 @@ def configure_logging(level: int = logging.INFO) -> None:
     for handler in logger.handlers:
         handler.setLevel(level)
 
+

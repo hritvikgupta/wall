@@ -63,3 +63,4 @@ class FailResult(ValidationResult):
         """Add an error span."""
         self.error_spans.append(ErrorSpan(start, end, message, fix_value))
 
+

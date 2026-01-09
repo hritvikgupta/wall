@@ -26,3 +26,4 @@ class StreamRunner(Runner):
         for chunk in self.api.stream(prompt, **kwargs):
             yield chunk
 
+

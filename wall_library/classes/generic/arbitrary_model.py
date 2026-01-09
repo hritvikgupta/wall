@@ -22,3 +22,4 @@ class ArbitraryModel:
         """Convert to dictionary."""
         return self._data.copy()
 
+

@@ -17,3 +17,4 @@ class BasePrompt(ABC):
         """Convert prompt to dictionary."""
         pass
 
+

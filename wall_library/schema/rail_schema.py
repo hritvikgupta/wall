@@ -155,3 +155,4 @@ def json_schema_to_rail_output(schema: Dict[str, Any]) -> str:
     rail_type = schema.get("type", "string")
     return f"<{rail_type}/>"
 
+

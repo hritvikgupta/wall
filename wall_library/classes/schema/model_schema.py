@@ -20,3 +20,4 @@ class ModelSchema:
     def __repr__(self) -> str:
         return f"ModelSchema(model={self.model.__name__})"
 
+

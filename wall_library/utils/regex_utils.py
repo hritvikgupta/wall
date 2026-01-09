@@ -20,3 +20,4 @@ def split_on(text: str, delimiter: str = ";") -> List[str]:
     parts = [part.strip() for part in text.split(delimiter) if part.strip()]
     return parts
 
+

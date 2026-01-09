@@ -25,3 +25,4 @@ def extract_serializeable_metadata(metadata: Dict[str, Any]) -> Dict[str, Any]:
 
     return serializable
 
+

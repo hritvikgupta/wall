@@ -98,3 +98,4 @@ class ContextManager:
 
         return True  # No context restrictions
 
+

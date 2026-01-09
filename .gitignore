@@ -65,3 +65,7 @@ dmypy.json
 *.pyo
 *.pyd
 
+
+
+# Website
+website/

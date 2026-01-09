@@ -21,3 +21,4 @@ class UserFacingException(Exception):
     def __str__(self) -> str:
         return self.user_message
 
+

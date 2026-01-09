@@ -38,3 +38,4 @@ settings = Settings()
 # Load from environment variables
 settings.enable_metrics = os.getenv("WALL_ENABLE_METRICS", "true").lower() == "true"
 
+

@@ -21,3 +21,4 @@ def xml_to_string(element: Optional[_Element]) -> Optional[str]:
         return str(element.tag)
     return str(element)
 
+

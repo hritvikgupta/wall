@@ -43,3 +43,4 @@ def output_format_json_schema(schema: Dict[str, Any]) -> Dict[str, Any]:
 
     return formatted
 
+

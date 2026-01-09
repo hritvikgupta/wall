@@ -46,3 +46,4 @@ class BaseRunnable(Runnable):
         """
         raise NotImplementedError("ainvoke method must be implemented")
 
+

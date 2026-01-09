@@ -29,3 +29,4 @@ def parse_schema(schema_input: Any) -> Dict[str, Any]:
     else:
         raise ValueError(f"Unsupported schema format: {type(schema_input)}")
 
+

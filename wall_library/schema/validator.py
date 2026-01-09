@@ -45,3 +45,4 @@ def schema_validation(instance: Any, schema: Dict[str, Any]) -> bool:
     """
     return validate_json_schema(instance, schema)
 
+

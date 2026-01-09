@@ -5,3 +5,4 @@ from wall_library.logging.log_scopes import LogScope
 
 __all__ = ["WallLogger", "LogScope"]
 
+

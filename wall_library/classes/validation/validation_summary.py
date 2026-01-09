@@ -35,3 +35,4 @@ class ValidationSummary:
     def __repr__(self) -> str:
         return f"ValidationSummary(passed={self.passed}, failed={self.failed}, total={self.total})"
 
+

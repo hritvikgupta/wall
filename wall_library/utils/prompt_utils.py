@@ -30,3 +30,4 @@ def prompt_content_for_schema(schema: Dict[str, Any]) -> str:
     schema_str = str(schema)
     return f"Please generate output matching this schema:\n{schema_str}"
 
+

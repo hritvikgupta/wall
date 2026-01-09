@@ -30,3 +30,4 @@ def start(
     typer.echo(f"Starting server on {host}:{port}")
     app.run(host=host, port=port, debug=debug)
 
+

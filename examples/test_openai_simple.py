@@ -73,3 +73,4 @@ print("=" * 60)
 print("\nNote: For full guard execution with OpenAI, use:")
 print("  guard(llm_api=llm_api_call, prompt='your prompt')")
 
+

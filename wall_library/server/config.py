@@ -14,3 +14,4 @@ class ServerConfig:
     workers: int = 4
     timeout: int = 120
 
+

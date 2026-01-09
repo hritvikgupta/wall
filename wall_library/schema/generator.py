@@ -14,3 +14,4 @@ def generate_json_schema(processed_schema) -> Dict[str, Any]:
     """
     return processed_schema.schema
 
+

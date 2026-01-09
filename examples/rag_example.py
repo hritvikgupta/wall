@@ -23,3 +23,4 @@ try:
 except ImportError:
     print("ChromaDB not installed. Install with: pip install wall-library[rag]")
 
+

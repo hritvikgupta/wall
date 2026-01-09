@@ -60,3 +60,4 @@ def model_is_supported_server_side(model: str) -> bool:
     # Default implementation
     return False
 
+
