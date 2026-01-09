@@ -1,13 +1,16 @@
-# Wall Library
-
 <div align="center">
 
-![Wall Library Architecture](assets/wall-library-architecture.png)
+# Wall Library
 
 **Professional LLM Validation & Context Management Library**
 
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
 [![License: Apache 2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+[![Documentation](https://img.shields.io/badge/docs-llmwall.dev-blueviolet.svg)](https://llmwall.dev/documentation)
+
+<br />
+
+![Wall Library Architecture](assets/wall-library-architecture.png)
 
 **Enterprise-Grade Firewall for Your LLM Applications**
 
