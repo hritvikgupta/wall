@@ -84,7 +84,7 @@
 ### Basic Installation
 
 ```bash
-pip install wall-library
+pip install -i https://test.pypi.org/simple/ wall-library
 ```
 
 This automatically installs all core features including:
