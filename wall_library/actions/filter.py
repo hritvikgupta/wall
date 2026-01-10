@@ -1,6 +1,6 @@
 """Filter action implementation."""
 
-from typing import Any, List
+from typing import Any, List, Optional
 
 from wall_library.classes.validation.validation_result import FailResult, ValidationResult
 

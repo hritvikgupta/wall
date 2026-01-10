@@ -11,7 +11,7 @@ except FileNotFoundError:
 
 setup(
     name="wall-library",
-    version="0.1.0",
+    version="0.1.1",
     description="Professional LLM Validation & Context Management Library",
     long_description=long_description,
     long_description_content_type="text/markdown",
