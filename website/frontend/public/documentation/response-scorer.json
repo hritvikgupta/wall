@@ -1,0 +1,181 @@
+{
+  "id": "response-scorer",
+  "title": "Response Scorer - Quality Metrics",
+  "description": "Evaluate LLM responses against expected outputs using multiple metrics",
+  "content": [
+    {
+      "type": "text",
+      "content": "**Response Scorer** evaluates LLM responses against expected outputs using multiple metrics. It provides quantitative measures of response quality, helping you understand how well your LLM is performing and whether responses meet your quality standards."
+    },
+    {
+      "type": "section",
+      "title": "Understanding Response Scoring",
+      "subsections": [
+        {
+          "title": "What is Response Scoring?",
+          "type": "text",
+          "content": "Response scoring measures how well an LLM response matches an expected output. It uses various metrics (ROUGE, BLEU, cosine similarity, etc.) to compute numerical scores between 0.0 and 1.0, where:\n\n- **1.0**: Perfect match\n- **0.7-1.0**: High quality\n- **0.5-0.7**: Medium quality\n- **0.0-0.5**: Low quality\n\nScoring helps you:\n- Assess response quality objectively\n- Set quality thresholds\n- Track improvements over time\n- Compare different models or prompts"
+        },
+        {
+          "title": "Why Use Multiple Metrics?",
+          "type": "text",
+          "content": "Different metrics measure different aspects of quality:\n\n- **ROUGE**: Measures content overlap (good for summarization)\n- **BLEU**: Measures precision (good for translation)\n- **Cosine Similarity**: Measures vector similarity\n- **Semantic Similarity**: Measures meaning similarity\n\nUsing multiple metrics gives you a more complete picture of response quality. You can aggregate them into a single score or analyze each metric separately."
+        }
+      ]
+    },
+    {
+      "type": "section",
+      "title": "Available Metrics - Detailed Explanation",
+      "subsections": [
+        {
+          "title": "CosineSimilarityMetric",
+          "type": "text",
+          "content": "**Cosine Similarity** measures the angle between two vectors in embedding space. It ranges from -1 to 1, but in practice for text similarity, it's typically 0 to 1.\n\n- **How it works**: Converts text to embeddings, computes cosine of angle between vectors\n- **Best for**: General semantic similarity, comparing meaning\n- **Range**: 0.0 (completely different) to 1.0 (identical)\n- **Fast**: Relatively fast computation\n- **Use when**: You want to measure how similar two texts are in meaning"
+        },
+        {
+          "title": "SemanticSimilarityMetric",
+          "type": "text",
+          "content": "**Semantic Similarity** uses advanced embeddings (sentence-transformers) to measure meaning similarity. It's more sophisticated than cosine similarity.\n\n- **How it works**: Uses pre-trained sentence transformers to create rich embeddings, then computes similarity\n- **Best for**: Understanding-based similarity, capturing nuanced meaning\n- **Range**: 0.0 to 1.0\n- **Slower**: More computation than basic cosine similarity\n- **Use when**: You need to capture semantic meaning, not just word overlap"
+        },
+        {
+          "title": "ROUGEMetric",
+          "type": "text",
+          "content": "**ROUGE** (Recall-Oriented Understudy for Gisting Evaluation) measures n-gram overlap between response and expected output.\n\n- **Types**: ROUGE-1 (unigrams), ROUGE-2 (bigrams), ROUGE-L (longest common subsequence)\n- **How it works**: Counts overlapping n-grams, computes recall (how much of expected is in response)\n- **Best for**: Summarization, content overlap measurement\n- **Range**: 0.0 to 1.0\n- **Use when**: You care about content coverage (did the response include the important information?)"
+        },
+        {
+          "title": "BLEUMetric",
+          "type": "text",
+          "content": "**BLEU** (Bilingual Evaluation Understudy) measures precision of n-grams.\n\n- **How it works**: Counts n-grams in response that appear in expected output, computes precision\n- **Best for**: Translation quality, precision measurement\n- **Range**: 0.0 to 1.0\n- **Use when**: You care about precision (is the response accurate, not just comprehensive?)"
+        },
+        {
+          "title": "CustomMetric",
+          "type": "text",
+          "content": "**Custom Metric** allows you to define your own scoring function for domain-specific needs.\n\n- **How it works**: You implement a `compute(response, expected)` method\n- **Best for**: Domain-specific quality measures\n- **Use when**: Standard metrics don't capture what you need (e.g., medical accuracy, legal compliance)"
+        }
+      ]
+    },
+    {
+      "type": "section",
+      "title": "Complete Usage Guide",
+      "subsections": [
+        {
+          "title": "Step 1: Import and Create Scorer",
+          "type": "code",
+          "code": "from wall_library.scoring import ResponseScorer, ROUGEMetric, BLEUMetric, CosineSimilarityMetric, SemanticSimilarityMetric\n\n# Create scorer\nscorer = ResponseScorer(\n    threshold=0.7  # Default threshold for pass/fail\n)\n\n# By default, scorer includes CosineSimilarityMetric and SemanticSimilarityMetric\n# You can add more metrics",
+          "input": "Creating scorer...",
+          "output": "✅ Scorer created with default metrics"
+        },
+        {
+          "title": "Step 2: Add Metrics",
+          "type": "code",
+          "code": "# Add metrics to scorer\nscorer.metrics.append(ROUGEMetric())\nscorer.metrics.append(BLEUMetric())\n\n# Or create with specific metrics\nscorer = ResponseScorer()\nscorer.metrics = [\n    ROUGEMetric(),\n    BLEUMetric(),\n    CosineSimilarityMetric(),\n    SemanticSimilarityMetric()\n]",
+          "input": "Adding metrics...",
+          "output": "✅ Metrics added to scorer"
+        },
+        {
+          "title": "Step 3: Score a Response",
+          "type": "code",
+          "code": "# Score response against expected output\nresponse = \"Common symptoms of diabetes include increased thirst, frequent urination, and fatigue.\"\nexpected = \"Diabetes symptoms include increased thirst, frequent urination, unexplained weight loss, fatigue, and blurred vision. Consult a healthcare provider for proper diagnosis.\"\n\n# Compute scores for all metrics\nscores = scorer.score(response, expected)\n\n# scores is a dictionary:\n# {\n#     'ROUGEMetric': 0.720,\n#     'BLEUMetric': 0.680,\n#     'CosineSimilarityMetric': 0.850,\n#     'SemanticSimilarityMetric': 0.790\n# }\n\nprint(\"Individual Scores:\")\nfor metric_name, score in scores.items():\n    print(f\"  {metric_name}: {score:.3f}\")",
+          "input": "Scoring response...",
+          "output": "Individual Scores:\n  ROUGEMetric: 0.720\n  BLEUMetric: 0.680\n  CosineSimilarityMetric: 0.850\n  SemanticSimilarityMetric: 0.790"
+        },
+        {
+          "title": "Step 4: Aggregate Scores",
+          "type": "code",
+          "code": "# Aggregate multiple metric scores into a single score\naggregated = scorer.aggregate_score(scores)\nprint(f\"Aggregated Score: {aggregated:.3f}\")\n\n# Aggregation methods:\n# - \"weighted_average\" (default): Weighted average using scorer.weights\n# - \"average\": Simple average of all scores\n# - \"min\": Minimum score (most conservative)\n# - \"max\": Maximum score (most lenient)\n\n# Use weighted average with custom weights\nscorer.weights = {\n    \"ROUGEMetric\": 0.3,\n    \"BLEUMetric\": 0.2,\n    \"CosineSimilarityMetric\": 0.3,\n    \"SemanticSimilarityMetric\": 0.2\n}\nweighted_aggregated = scorer.aggregate_score(scores, aggregation=\"weighted_average\")",
+          "input": "Aggregating scores...",
+          "output": "Aggregated Score: 0.760\nWeighted Aggregated: 0.745"
+        },
+        {
+          "title": "Step 5: Evaluate with Threshold",
+          "type": "code",
+          "code": "# Evaluate response with threshold (pass/fail)\nevaluation = scorer.evaluate(response, expected, threshold=0.7)\n\n# evaluation contains:\n# {\n#     'scores': {...},  # Individual metric scores\n#     'aggregated_score': 0.760,  # Aggregated score\n#     'passed': True,  # Whether aggregated score >= threshold\n#     'threshold': 0.7\n# }\n\nif evaluation['passed']:\n    print(f\"✅ Response passed quality check: {evaluation['aggregated_score']:.3f}\")\nelse:\n    print(f\"❌ Response failed quality check: {evaluation['aggregated_score']:.3f} < {evaluation['threshold']}\")",
+          "input": "Evaluating with threshold...",
+          "output": "✅ Response passed quality check: 0.760"
+        }
+      ]
+    },
+    {
+      "type": "section",
+      "title": "Advanced Usage",
+      "subsections": [
+        {
+          "title": "Scoring Against Approved Contexts",
+          "type": "code",
+          "code": "# Score response against approved context boundaries (not just one expected output)\napproved_contexts = [\n    \"General health information and wellness tips\",\n    \"Symptom description and when to seek medical attention\",\n    \"Medication information and dosage instructions\"\n]\napproved_text = \"\\n\".join(approved_contexts)\n\n# Score response against all approved contexts\nscores = scorer.score(response, approved_text)\n\n# This tells you how well the response aligns with your approved domain",
+          "input": "Scoring against contexts...",
+          "output": "✅ Scores computed against approved contexts"
+        },
+        {
+          "title": "Creating Custom Metrics",
+          "type": "code",
+          "code": "from wall_library.scoring.metrics import BaseMetric\n\nclass HealthcareAccuracyMetric(BaseMetric):\n    \"\"\"Custom metric for healthcare accuracy.\"\"\"\n    \n    def compute(self, response: str, expected: str) -> float:\n        \"\"\"Compute healthcare-specific accuracy score.\"\"\"\n        # Your custom logic here\n        # For example, check for medical accuracy indicators\n        \n        # Simple example: check for disclaimer presence\n        has_disclaimer = \"consult\" in response.lower() or \"healthcare provider\" in response.lower()\n        \n        # Check for dangerous claims\n        dangerous_terms = [\"guaranteed\", \"100%\", \"miracle\"]\n        has_dangerous = any(term in response.lower() for term in dangerous_terms)\n        \n        # Score: 1.0 if has disclaimer and no dangerous terms, 0.0 otherwise\n        if has_disclaimer and not has_dangerous:\n            return 1.0\n        elif has_dangerous:\n            return 0.0\n        else:\n            return 0.5  # Partial score\n\n# Use custom metric\nscorer.metrics.append(HealthcareAccuracyMetric())\nscores = scorer.score(response, expected)",
+          "input": "Using custom metric...",
+          "output": "✅ Custom metric computed"
+        },
+        {
+          "title": "Batch Scoring",
+          "type": "code",
+          "code": "# Score multiple responses efficiently\nresponses = [\n    \"Common symptoms of diabetes include increased thirst.\",\n    \"Diabetes symptoms include increased thirst, frequent urination, and fatigue.\",\n    \"Diabetes has symptoms.\"\n]\n\nexpected = \"Diabetes symptoms include increased thirst, frequent urination, unexplained weight loss, fatigue, and blurred vision.\"\n\n# Score all responses\nall_scores = []\nfor response in responses:\n    scores = scorer.score(response, expected)\n    aggregated = scorer.aggregate_score(scores)\n    all_scores.append({\n        \"response\": response,\n        \"scores\": scores,\n        \"aggregated\": aggregated\n    })\n\n# Sort by aggregated score\nall_scores.sort(key=lambda x: x['aggregated'], reverse=True)\n\n# Best response\nbest = all_scores[0]\nprint(f\"Best response (score: {best['aggregated']:.3f}): {best['response']}\")",
+          "input": "Batch scoring...",
+          "output": "Best response (score: 0.720): Diabetes symptoms include increased thirst, frequent urination, and fatigue."
+        }
+      ]
+    },
+    {
+      "type": "section",
+      "title": "Integration with Other Components",
+      "subsections": [
+        {
+          "title": "Scoring with RAG Retrieved Contexts",
+          "type": "code",
+          "code": "from wall_library.rag import RAGRetriever\nfrom wall_library.scoring import ResponseScorer\n\n# Retrieve context from RAG\nrag = RAGRetriever(...)\nretrieved = rag.retrieve(query, top_k=1)\ncontext = retrieved[0]['document']\n\n# LLM generates response using context\nllm_response = llm.generate(f\"Context: {context}\\n\\nQuery: {query}\")\n\n# Score response against retrieved context (ground truth)\nscorer = ResponseScorer()\nscores = scorer.score(llm_response, context)\n\n# High score means response is well-grounded in retrieved knowledge\nif scorer.aggregate_score(scores) > 0.8:\n    print(\"✅ Response is well-grounded in knowledge base\")\nelse:\n    print(\"⚠️ Response may not be well-grounded\")",
+          "input": "Scoring with RAG...",
+          "output": "✅ Response is well-grounded in knowledge base"
+        },
+        {
+          "title": "Scoring with Monitoring",
+          "type": "code",
+          "code": "from wall_library.monitoring import LLMMonitor\nfrom wall_library.scoring import ResponseScorer\n\n# Track scores in monitoring\nmonitor = LLMMonitor()\nscorer = ResponseScorer()\n\n# Process query\nquery = \"What are diabetes symptoms?\"\nllm_response = llm.generate(query)\n\n# Score response\nscores = scorer.score(llm_response, expected_output)\naggregated = scorer.aggregate_score(scores)\n\n# Track in monitor with scores as metadata\nmonitor.track_call(\n    input_data=query,\n    output=llm_response,\n    metadata={\n        \"scores\": scores,\n        \"aggregated_score\": aggregated,\n        \"quality\": \"high\" if aggregated > 0.8 else \"medium\" if aggregated > 0.6 else \"low\"\n    }\n)\n\n# Now you can analyze quality trends over time",
+          "input": "Tracking scores...",
+          "output": "✅ Scores tracked in monitoring"
+        }
+      ]
+    },
+    {
+      "type": "section",
+      "title": "Best Practices",
+      "subsections": [
+        {
+          "title": "Recommendations",
+          "type": "list",
+          "items": [
+            "**Use multiple metrics**: Don't rely on a single metric - use 2-4 metrics for comprehensive assessment",
+            "**Set appropriate thresholds**: Start with 0.7, adjust based on your needs (higher = stricter)",
+            "**Use weighted aggregation**: Assign higher weights to metrics that matter most for your use case",
+            "**Score against ground truth**: Use verified knowledge (from RAG) as expected output when possible",
+            "**Track scores over time**: Monitor quality trends to identify improvements or degradations",
+            "**Combine with validation**: Use scoring alongside validation (safety, format, etc.)",
+            "**Custom metrics for domains**: Create domain-specific metrics for specialized use cases"
+          ]
+        },
+        {
+          "title": "Interpreting Scores",
+          "type": "text",
+          "content": "**Score Ranges**:\n- **0.9-1.0**: Excellent quality, very close to expected\n- **0.7-0.9**: Good quality, meets standards\n- **0.5-0.7**: Acceptable quality, may need improvement\n- **0.0-0.5**: Poor quality, significant gaps\n\n**Metric-Specific Notes**:\n- **ROUGE**: Higher = more content overlap (good for comprehensiveness)\n- **BLEU**: Higher = more precision (good for accuracy)\n- **Cosine/Semantic**: Higher = more similar meaning (good for semantic alignment)\n\n**Context Matters**: A score of 0.6 might be acceptable for creative tasks but unacceptable for factual tasks."
+        },
+        {
+          "title": "Common Mistakes",
+          "type": "list",
+          "items": [
+            "❌ Using only one metric (gives incomplete picture)",
+            "❌ Setting threshold too high (rejects good responses)",
+            "❌ Setting threshold too low (accepts poor responses)",
+            "❌ Not considering domain-specific needs (use custom metrics)",
+            "❌ Scoring against wrong expected output (use verified knowledge when possible)"
+          ]
+        }
+      ]
+    }
+  ]
+}

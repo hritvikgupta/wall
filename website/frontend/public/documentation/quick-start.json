@@ -1,0 +1,109 @@
+{
+  "id": "quick-start",
+  "title": "Quick Start",
+  "description": "Get started with Wall Library in minutes",
+  "content": [
+    {
+      "type": "text",
+      "content": "This guide will get you up and running with Wall Library in just a few minutes. We'll walk through installation, basic setup, and your first validation."
+    },
+    {
+      "type": "section",
+      "title": "Installation",
+      "subsections": [
+        {
+          "title": "Step 1: Install Wall Library",
+          "type": "code",
+          "code": "# Basic installation (includes all core features)\npip install wall-library\n\n# Verify installation\npython -c \"import wall_library; print(wall_library.__version__)\"",
+          "input": "Installing Wall Library...",
+          "output": "Successfully installed wall-library\nVersion: 2.0.4"
+        },
+        {
+          "title": "What Gets Installed",
+          "type": "text",
+          "content": "The basic installation includes:\n\n- Core Guard features with validators\n- NLP context filtering (scikit-learn, sentence-transformers)\n- RAG with ChromaDB (chromadb, rouge-score, nltk)\n- Scoring metrics (ROUGE, BLEU, cosine similarity)\n- Monitoring and OpenTelemetry\n- Visualization (matplotlib, plotly, wordcloud)\n- CLI tools and server (Flask)\n\nEverything you need to get started!"
+        }
+      ]
+    },
+    {
+      "type": "section",
+      "title": "Your First Validation - Step by Step",
+      "subsections": [
+        {
+          "title": "Step 1: Import Required Modules",
+          "type": "code",
+          "code": "from wall_library import WallGuard, OnFailAction\nfrom wall_library.validator_base import Validator, register_validator\nfrom wall_library.classes.validation.validation_result import PassResult, FailResult",
+          "input": "Importing modules...",
+          "output": "✅ Modules imported"
+        },
+        {
+          "title": "Step 2: Create Your First Validator",
+          "type": "code",
+          "code": "# Create a simple length validator\n@register_validator(\"min_length\")\nclass MinLengthValidator(Validator):\n    \"\"\"Validator to ensure text meets minimum length requirement.\"\"\"\n    \n    def __init__(self, min_length: int = 10, **kwargs):\n        # require_rc=False means no .wallrc config file needed\n        super().__init__(require_rc=False, **kwargs)\n        self.min_length = min_length\n    \n    def _validate(self, value: str, metadata: dict):\n        \"\"\"Validate that value meets minimum length.\"\"\"\n        if not isinstance(value, str):\n            return FailResult(\n                error_message=\"Value must be a string\",\n                metadata=metadata\n            )\n        \n        if len(value) < self.min_length:\n            return FailResult(\n                error_message=f\"Text too short: {len(value)} < {self.min_length} characters\",\n                metadata={**metadata, \"actual_length\": len(value), \"required_length\": self.min_length}\n            )\n        \n        return PassResult(metadata=metadata)",
+          "input": "Creating validator...",
+          "output": "✅ Validator 'min_length' registered"
+        },
+        {
+          "title": "Step 3: Create and Configure Guard",
+          "type": "code",
+          "code": "# Create a guard instance\nguard = WallGuard()\n\n# Add validator to guard\n# Format: (ValidatorClass, {constructor_params}, OnFailAction)\nguard = guard.use(\n    (MinLengthValidator, {\"min_length\": 10}, OnFailAction.EXCEPTION)\n)\n\n# OnFailAction.EXCEPTION means: raise error if validation fails\n# Other options: FILTER, REASK, FIX, REFRAIN, NOOP",
+          "input": "Configuring guard...",
+          "output": "✅ Guard configured with validator"
+        },
+        {
+          "title": "Step 4: Validate Your First Text",
+          "type": "code",
+          "code": "# Validate a string\nresult = guard.validate(\"Hello World!\")\n\n# Check if validation passed\nif result.validation_passed:\n    print(f\"✅ Validation passed!\")\n    print(f\"Validated output: {result.validated_output}\")\nelse:\n    print(f\"❌ Validation failed!\")\n    print(f\"Error: {result.error_messages}\")\n    print(f\"Raw output: {result.raw_output}\")\n\n# Try with a short string (will fail)\ntry:\n    result = guard.validate(\"Short\")\nexcept Exception as e:\n    print(f\"❌ Blocked: {e}\")",
+          "input": "Validating text...",
+          "output": "✅ Validation passed!\nValidated output: Hello World!\n❌ Blocked: Text too short: 5 < 10 characters"
+        },
+        {
+          "title": "Step 5: Use Guard with LLM (Optional)",
+          "type": "code",
+          "code": "from openai import OpenAI\n\n# Setup OpenAI client\nclient = OpenAI(api_key=\"your-api-key\")\n\ndef llm_api_call(prompt: str, **kwargs):\n    \"\"\"Simple LLM API wrapper.\"\"\"\n    response = client.chat.completions.create(\n        model=\"gpt-3.5-turbo\",\n        messages=[{\"role\": \"user\", \"content\": prompt}],\n        **kwargs\n    )\n    return response.choices[0].message.content\n\n# Guard automatically calls LLM and validates response\nraw_output, validated_output, outcome = guard(\n    llm_api=llm_api_call,\n    prompt=\"Tell me about diabetes symptoms in one sentence.\"\n)\n\nif outcome.validation_passed:\n    print(f\"✅ Validated: {validated_output}\")\nelse:\n    print(f\"❌ Validation failed: {outcome.error_messages}\")",
+          "input": "Calling LLM with guard...",
+          "output": "✅ Validated: Common symptoms of diabetes include increased thirst and frequent urination."
+        }
+      ]
+    },
+    {
+      "type": "section",
+      "title": "Understanding the Results",
+      "subsections": [
+        {
+          "title": "ValidationOutcome Object",
+          "type": "text",
+          "content": "When you call `guard.validate()`, you get a `ValidationOutcome` object:\n\n- **validation_passed**: Boolean - True if validation passed, False otherwise\n- **validated_output**: The validated output (None if validation failed)\n- **raw_output**: The original, unvalidated output\n- **error_messages**: List of error messages (if validation failed)\n- **error_spans**: Locations of errors in the text\n- **metadata**: Additional information about the validation\n\n**Always check `validation_passed` before using `validated_output`!**"
+        },
+        {
+          "title": "OnFailActions",
+          "type": "text",
+          "content": "OnFailActions determine what happens when validation fails:\n\n- **EXCEPTION**: Raises error (strictest) - use for safety\n- **FILTER**: Removes invalid content - use for content moderation\n- **REASK**: Re-asks LLM with feedback - use for quality improvement\n- **FIX**: Attempts to fix invalid content - use when fixes are possible\n- **REFRAIN**: Returns empty response - use when no response is safer\n- **NOOP**: Passes through (logs warning) - use for monitoring only\n\n**Start with EXCEPTION for safety-critical applications.**"
+        }
+      ]
+    },
+    {
+      "type": "section",
+      "title": "Next Steps",
+      "subsections": [
+        {
+          "title": "What to Learn Next",
+          "type": "list",
+          "items": [
+            "**Create More Validators**: Learn to create custom validators for your use case",
+            "**Add Context Manager**: Learn to filter responses by domain",
+            "**Add RAG**: Learn to ground responses in your knowledge base",
+            "**Add Scoring**: Learn to evaluate response quality",
+            "**Add Monitoring**: Learn to track LLM interactions",
+            "**Add Logging**: Learn to log all operations automatically"
+          ]
+        },
+        {
+          "title": "Recommended Learning Path",
+          "type": "text",
+          "content": "1. **Start Here**: Quick Start (you are here!)\n2. **Learn Validators**: Create custom validators for your domain\n3. **Learn Wall Guard**: Master the core validation engine\n4. **Add Context Manager**: Filter by domain\n5. **Add RAG**: Ground responses in knowledge\n6. **Add Scoring**: Evaluate quality\n7. **Add Monitoring & Logging**: Production observability\n8. **Explore Advanced**: Schema systems, framework integration, streaming"
+        }
+      ]
+    }
+  ]
+}

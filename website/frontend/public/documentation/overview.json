@@ -1,0 +1,53 @@
+{
+  "id": "overview",
+  "title": "Overview",
+  "description": "Introduction to Wall Library",
+  "content": [
+    {
+      "type": "text",
+      "content": "**Wall Library** is a comprehensive Python framework that acts as a \"firewall\" for your Large Language Model (LLM) applications. It provides enterprise-grade validation, context filtering, RAG retrieval, response scoring, monitoring, and visualization to ensure your LLM applications are safe, accurate, and production-ready."
+    },
+    {
+      "type": "image",
+      "src": "/wall-library-architecture.png",
+      "alt": "Wall Library Architecture Diagram",
+      "caption": "Figure 1: Wall Library's Layered Middleware Architecture"
+    },
+    {
+      "type": "section",
+      "title": "Why Wall Library?",
+      "subsections": [
+        {
+          "title": "Problems LLMs Can Generate",
+          "type": "list",
+          "items": [
+            "❌ Dangerous or inappropriate content",
+            "❌ Information outside your domain boundaries",
+            "❌ Unstructured or incomplete responses",
+            "❌ Biased or inaccurate information",
+            "❌ Hallucinations and made-up facts"
+          ]
+        },
+        {
+          "title": "Solutions Wall Library Provides",
+          "type": "list",
+          "items": [
+            "✅ **Multi-layer validation** with custom validators",
+            "✅ **Context filtering** to keep responses in-bounds",
+            "✅ **RAG integration** for accurate, knowledge-grounded responses",
+            "✅ **Comprehensive monitoring** for production observability",
+            "✅ **Visual analytics** with 3D graphs and dashboards",
+            "✅ **Framework integration** (LangChain, LangGraph) for easy adoption"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "code",
+      "title": "basic_validation.py",
+      "code": "from wall_library import WallGuard, OnFailAction\nfrom wall_library.validator_base import Validator, register_validator\nfrom wall_library.classes.validation.validation_result import PassResult, FailResult\n\n# Create custom validator\n@register_validator(\"min_length\")\nclass MinLengthValidator(Validator):\n    def __init__(self, min_length: int = 10, **kwargs):\n        super().__init__(require_rc=False, **kwargs)\n        self.min_length = min_length\n    \n    def _validate(self, value: str, metadata: dict):\n        if len(value) < self.min_length:\n            return FailResult(\n                error_message=f\"Too short: {len(value)} < {self.min_length}\",\n                metadata=metadata\n            )\n        return PassResult(metadata=metadata)\n\n# Use guard\nguard = WallGuard().use(\n    (MinLengthValidator, {\"min_length\": 10}, OnFailAction.EXCEPTION)\n)\n\nresult = guard.validate(\"Hello World!\")\nprint(result.validation_passed)  # True",
+      "input": "Validation check...",
+      "output": "Passed: True"
+    }
+  ]
+}

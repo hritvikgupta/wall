@@ -1,0 +1,183 @@
+{
+  "id": "rag-retriever",
+  "title": "RAG Retriever - Knowledge Grounding",
+  "description": "Retrieve relevant knowledge from vector database to ground LLM responses in verified information",
+  "content": [
+    {
+      "type": "text",
+      "content": "**RAG Retriever** (Retrieval-Augmented Generation) retrieves relevant knowledge from a vector database to ground LLM responses in verified information. This reduces hallucinations and ensures responses are based on your knowledge base rather than the LLM's training data."
+    },
+    {
+      "type": "section",
+      "title": "Understanding RAG",
+      "subsections": [
+        {
+          "title": "What is RAG?",
+          "type": "text",
+          "content": "RAG (Retrieval-Augmented Generation) is a technique that:\n\n1. **Stores knowledge** in a vector database (ChromaDB)\n2. **Retrieves relevant context** when a query comes in\n3. **Provides context to LLM** along with the query\n4. **LLM generates response** based on retrieved context\n\nThis ensures responses are **grounded in your verified knowledge** rather than the LLM's potentially outdated or incorrect training data."
+        },
+        {
+          "title": "Why Use RAG?",
+          "type": "list",
+          "items": [
+            "**Reduce Hallucinations**: LLM uses your verified knowledge, not its training data",
+            "**Up-to-date Information**: Update knowledge base without retraining LLM",
+            "**Domain-Specific**: Use your own domain knowledge (healthcare, legal, etc.)",
+            "**Traceability**: Know which knowledge sources were used",
+            "**Accuracy**: Responses based on verified facts, not LLM memory"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "section",
+      "title": "Complete Setup - Step by Step",
+      "subsections": [
+        {
+          "title": "Step 1: Install Dependencies",
+          "type": "code",
+          "code": "# RAG requires ChromaDB and embedding services\n# Install with:\npip install wall-library[rag]\n\n# Or install separately:\npip install chromadb sentence-transformers",
+          "input": "Installing dependencies...",
+          "output": "✅ Dependencies installed"
+        },
+        {
+          "title": "Step 2: Import Required Modules",
+          "type": "code",
+          "code": "from wall_library.rag import ChromaDBClient, RAGRetriever, EmbeddingService\nimport tempfile",
+          "input": "Importing modules...",
+          "output": "✅ Modules imported"
+        },
+        {
+          "title": "Step 3: Initialize ChromaDB Client",
+          "type": "code",
+          "code": "import tempfile\n\n# Create temporary directory for ChromaDB (or use permanent path)\ntemp_dir = tempfile.mkdtemp()\n# OR use permanent directory:\n# persist_dir = \"./chromadb_data\"\n\n# Initialize ChromaDB client\nchromadb_client = ChromaDBClient(\n    collection_name=\"healthcare_knowledge_base\",\n    persist_directory=temp_dir  # None for in-memory, or path for persistence\n)\n\n# If persist_directory is provided, data persists across sessions\n# If None, data is in-memory only (lost on restart)",
+          "input": "Initializing ChromaDB...",
+          "output": "✅ ChromaDB client initialized"
+        },
+        {
+          "title": "Step 4: Initialize Embedding Service",
+          "type": "code",
+          "code": "# Embedding service converts text to vectors\n# Options:\n# - \"sentence-transformers\" (local, free, default)\n# - \"openai\" (requires API key, higher quality)\n\nembedding_service = EmbeddingService(\n    provider=\"sentence-transformers\"  # or \"openai\"\n)\n\n# For OpenAI (requires API key):\n# embedding_service = EmbeddingService(\n#     provider=\"openai\",\n#     api_key=\"your-openai-api-key\"\n# )",
+          "input": "Initializing embedding service...",
+          "output": "✅ Embedding service initialized"
+        },
+        {
+          "title": "Step 5: Create RAG Retriever",
+          "type": "code",
+          "code": "# Create RAG retriever\nrag_retriever = RAGRetriever(\n    chromadb_client=chromadb_client,\n    embedding_service=embedding_service,\n    top_k=5  # Number of results to retrieve (default: 5)\n)",
+          "input": "Creating RAG retriever...",
+          "output": "✅ RAG retriever created"
+        },
+        {
+          "title": "Step 6: Add Knowledge Base (Q&A Pairs)",
+          "type": "code",
+          "code": "# Prepare your knowledge base\nquestions = [\n    \"What are common symptoms of diabetes?\",\n    \"How should I take my blood pressure medication?\",\n    \"What preventive screenings should I get?\",\n    \"What are signs of anxiety?\",\n    \"How do I manage chronic pain?\"\n]\n\nanswers = [\n    \"Common symptoms of diabetes include increased thirst, frequent urination, unexplained weight loss, fatigue, and blurred vision. Consult a healthcare provider for proper diagnosis.\",\n    \"Blood pressure medications should be taken exactly as prescribed by your doctor, usually at the same time each day. Never stop taking medication without consulting your healthcare provider.\",\n    \"Preventive screenings vary by age and risk factors but typically include blood pressure checks, cholesterol tests, cancer screenings, and diabetes screening. Consult your doctor for personalized recommendations.\",\n    \"Signs of anxiety include excessive worry, restlessness, difficulty concentrating, sleep problems, and physical symptoms like rapid heartbeat. Seek professional help if symptoms persist.\",\n    \"Chronic pain management involves a combination of medical treatment, physical therapy, lifestyle modifications, and sometimes psychological support. Work with your healthcare team to develop a comprehensive plan.\"\n]\n\n# Add metadata (optional but recommended)\nmetadata = [\n    {\"type\": \"healthcare_qa\", \"index\": 0, \"domain\": \"healthcare\", \"topic\": \"diabetes\"},\n    {\"type\": \"healthcare_qa\", \"index\": 1, \"domain\": \"healthcare\", \"topic\": \"medication\"},\n    {\"type\": \"healthcare_qa\", \"index\": 2, \"domain\": \"healthcare\", \"topic\": \"prevention\"},\n    {\"type\": \"healthcare_qa\", \"index\": 3, \"domain\": \"healthcare\", \"topic\": \"mental_health\"},\n    {\"type\": \"healthcare_qa\", \"index\": 4, \"domain\": \"healthcare\", \"topic\": \"pain_management\"}\n]\n\n# Add Q&A pairs to ChromaDB\nchromadb_client.add_qa_pairs(\n    questions=questions,\n    answers=answers,\n    metadata=metadata\n)\n\n# The Q&A pairs are now stored in the vector database\n# Questions and answers are combined for embedding: \"{question} {answer}\"",
+          "input": "Adding knowledge base...",
+          "output": "✅ 5 Q&A pairs added to knowledge base"
+        },
+        {
+          "title": "Step 7: Retrieve Relevant Context",
+          "type": "code",
+          "code": "# Query the knowledge base\nquery = \"What are diabetes symptoms?\"\n\n# Retrieve relevant contexts\nretrieved = rag_retriever.retrieve(query, top_k=3)\n\n# Results are sorted by relevance score (highest first)\nprint(f\"Retrieved {len(retrieved)} relevant contexts:\")\nfor i, result in enumerate(retrieved, 1):\n    print(f\"\\n[{i}] Score: {result['score']:.3f}\")\n    print(f\"    Document: {result['document'][:100]}...\")\n    print(f\"    Metadata: {result['metadata']}\")\n    print(f\"    Distance: {result['distance']:.3f}\")",
+          "input": "Retrieving context...",
+          "output": "Retrieved 3 relevant contexts:\n[1] Score: 0.920\n    Document: What are common symptoms of diabetes? Common symptoms of diabetes include increased thirst...\n    Metadata: {'type': 'healthcare_qa', 'topic': 'diabetes'}\n    Distance: 0.150"
+        },
+        {
+          "title": "Step 8: Use Retrieved Context with LLM",
+          "type": "code",
+          "code": "# Use retrieved context in LLM prompt\nif retrieved:\n    # Get the most relevant context\n    context = retrieved[0]['document']\n    \n    # Build prompt with context\n    prompt = f\"\"\"Context: {context}\n\nQuestion: {query}\n\nBased on the context above, answer the question.\"\"\"\n    \n    # Call LLM with context\n    llm_response = llm_api_call(prompt)\n    \n    # LLM response is now grounded in your knowledge base\n    print(f\"LLM Response: {llm_response}\")\n    print(f\"\\nSource: {retrieved[0]['metadata']}\")",
+          "input": "Using context with LLM...",
+          "output": "LLM Response: Common symptoms of diabetes include increased thirst, frequent urination, unexplained weight loss, fatigue, and blurred vision. Consult a healthcare provider for proper diagnosis.\n\nSource: {'type': 'healthcare_qa', 'topic': 'diabetes'}"
+        }
+      ]
+    },
+    {
+      "type": "section",
+      "title": "Understanding Retrieval Results",
+      "subsections": [
+        {
+          "title": "Result Structure",
+          "type": "code",
+          "code": "# Each result in retrieved list contains:\nresult = {\n    \"document\": \"The full text (question + answer)\",\n    \"metadata\": {\"type\": \"healthcare_qa\", \"topic\": \"diabetes\"},\n    \"score\": 0.92,  # Relevance score (0.0 to 1.0, higher is better)\n    \"distance\": 0.15  # Vector distance (lower is better)\n}\n\n# Score: How relevant the document is to the query (higher = more relevant)\n# Distance: Vector distance in embedding space (lower = more similar)\n# Document: The actual text content\n# Metadata: Additional information about the document",
+          "input": "Understanding result structure...",
+          "output": "✅ Result structure explained"
+        },
+        {
+          "title": "Interpreting Scores",
+          "type": "text",
+          "content": "**Score** (0.0 to 1.0):\n- **0.9-1.0**: Very relevant, high confidence\n- **0.7-0.9**: Relevant, good match\n- **0.5-0.7**: Somewhat relevant, may need filtering\n- **0.0-0.5**: Not very relevant, consider excluding\n\n**Distance** (lower is better):\n- **0.0-0.2**: Very similar\n- **0.2-0.4**: Similar\n- **0.4-0.6**: Somewhat similar\n- **0.6+**: Not very similar\n\n**Best Practice**: Filter results by score threshold (e.g., only use results with score > 0.7)"
+        }
+      ]
+    },
+    {
+      "type": "section",
+      "title": "Advanced Usage",
+      "subsections": [
+        {
+          "title": "Hybrid Search (Semantic + Keyword)",
+          "type": "code",
+          "code": "# RAG Retriever supports hybrid search\n# Combines semantic similarity with keyword matching\n\nquery = \"What are diabetes symptoms?\"\n\n# Hybrid search combines both methods\nresults = rag_retriever.hybrid_search(query, top_k=5)\n\n# This is more robust than semantic-only search\n# Especially useful when:\n# - Query has specific keywords\n# - You want exact matches for certain terms\n# - Semantic similarity alone isn't enough",
+          "input": "Running hybrid search...",
+          "output": "✅ Hybrid search completed"
+        },
+        {
+          "title": "Filtering by Metadata",
+          "type": "code",
+          "code": "# After retrieval, filter by metadata\nquery = \"What are diabetes symptoms?\"\nretrieved = rag_retriever.retrieve(query, top_k=10)\n\n# Filter to only healthcare topics\nhealthcare_results = [\n    r for r in retrieved\n    if r['metadata'].get('domain') == 'healthcare'\n]\n\n# Filter by topic\n diabetes_results = [\n    r for r in retrieved\n    if r['metadata'].get('topic') == 'diabetes'\n]\n\n# Filter by score threshold\nhigh_quality_results = [\n    r for r in retrieved\n    if r['score'] > 0.8\n]",
+          "input": "Filtering results...",
+          "output": "✅ Results filtered"
+        },
+        {
+          "title": "Updating Knowledge Base",
+          "type": "code",
+          "code": "# Add new Q&A pairs to existing knowledge base\nnew_questions = [\"What is hypertension?\"]\nnew_answers = [\"Hypertension is high blood pressure, a condition where the force of blood against artery walls is too high.\"]\nnew_metadata = [{\"type\": \"healthcare_qa\", \"topic\": \"blood_pressure\"}]\n\n# Add to existing collection\nchromadb_client.add_qa_pairs(\n    questions=new_questions,\n    answers=new_answers,\n    metadata=new_metadata\n)\n\n# Knowledge base is now updated\n# No need to recreate the retriever",
+          "input": "Updating knowledge base...",
+          "output": "✅ Knowledge base updated"
+        }
+      ]
+    },
+    {
+      "type": "section",
+      "title": "Integration with Wall Guard",
+      "subsections": [
+        {
+          "title": "Complete RAG + Guard Workflow",
+          "type": "code",
+          "code": "from wall_library import WallGuard, OnFailAction\nfrom wall_library.rag import RAGRetriever, ChromaDBClient, EmbeddingService\nfrom openai import OpenAI\n\n# Setup RAG\nchromadb_client = ChromaDBClient(collection_name=\"healthcare_kb\")\nembedding_service = EmbeddingService(provider=\"sentence-transformers\")\nrag_retriever = RAGRetriever(\n    chromadb_client=chromadb_client,\n    embedding_service=embedding_service,\n    top_k=3\n)\n\n# Add knowledge base (do this once)\nchromadb_client.add_qa_pairs(questions, answers, metadata)\n\n# Setup Guard\nguard = WallGuard().use(\n    (SafetyValidator, {}, OnFailAction.EXCEPTION)\n)\n\n# LLM client\nclient = OpenAI(api_key=\"your-key\")\n\ndef process_query(query: str):\n    # Step 1: Retrieve relevant context\n    retrieved = rag_retriever.retrieve(query, top_k=3)\n    \n    if not retrieved or retrieved[0]['score'] < 0.7:\n        return \"I don't have enough information to answer that question.\"\n    \n    # Step 2: Build prompt with context\n    context = retrieved[0]['document']\n    prompt = f\"Context: {context}\\n\\nQuestion: {query}\"\n    \n    # Step 3: Call LLM\n    llm_response = client.chat.completions.create(\n        model=\"gpt-3.5-turbo\",\n        messages=[{\"role\": \"user\", \"content\": prompt}]\n    ).choices[0].message.content\n    \n    # Step 4: Validate with guard\n    raw, validated, outcome = guard(\n        llm_api=lambda p, **kw: client.chat.completions.create(\n            model=\"gpt-3.5-turbo\",\n            messages=[{\"role\": \"user\", \"content\": p}],\n            **kw\n        ).choices[0].message.content,\n        prompt=prompt\n    )\n    \n    if outcome.validation_passed:\n        return validated\n    else:\n        return \"Response validation failed.\"",
+          "input": "Running complete RAG + Guard workflow...",
+          "output": "✅ Query processed with RAG and validation"
+        }
+      ]
+    },
+    {
+      "type": "section",
+      "title": "Best Practices",
+      "subsections": [
+        {
+          "title": "Recommendations",
+          "type": "list",
+          "items": [
+            "**Use persistent storage**: Set `persist_directory` to save knowledge base across sessions",
+            "**Add rich metadata**: Include topic, domain, source, etc. for better filtering",
+            "**Filter by score**: Only use results with score > 0.7 for high-quality responses",
+            "**Combine Q&A**: Store both question and answer together for better retrieval",
+            "**Update regularly**: Keep knowledge base up-to-date with new information",
+            "**Use appropriate top_k**: Start with 3-5, adjust based on needs",
+            "**Set up logging**: Use WallLogger to track all retrievals for debugging"
+          ]
+        },
+        {
+          "title": "Common Mistakes",
+          "type": "list",
+          "items": [
+            "❌ Not filtering by score (using low-quality results)",
+            "❌ Using in-memory storage in production (data lost on restart)",
+            "❌ Not adding metadata (can't filter or trace sources)",
+            "❌ Using too many results (top_k too high, adds noise)",
+            "❌ Not updating knowledge base (outdated information)"
+          ]
+        }
+      ]
+    }
+  ]
+}

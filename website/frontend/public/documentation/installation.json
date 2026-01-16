@@ -1,0 +1,82 @@
+{
+  "id": "installation",
+  "title": "Installation",
+  "description": "How to install Wall Library",
+  "content": [
+    {
+      "type": "section",
+      "title": "Basic Installation",
+      "subsections": [
+        {
+          "title": "Install Command",
+          "type": "code",
+          "code": "pip install wall-library",
+          "input": "Installing...",
+          "output": "Successfully installed wall-library"
+        },
+        {
+          "title": "What's Included",
+          "type": "list",
+          "items": [
+            "Core Guard features with validators",
+            "NLP context filtering (scikit-learn, sentence-transformers)",
+            "RAG with ChromaDB (chromadb, rouge-score, nltk)",
+            "Scoring metrics (ROUGE, BLEU, cosine similarity)",
+            "Monitoring and OpenTelemetry",
+            "Visualization (matplotlib, plotly, wordcloud)",
+            "CLI tools and server (Flask)"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "section",
+      "title": "Optional Extras",
+      "subsections": [
+        {
+          "title": "Installation Commands",
+          "type": "code",
+          "code": "# LangChain integration\npip install wall-library[langchain]\n\n# LangGraph integration\npip install wall-library[langgraph]\n\n# FAISS vector database\npip install wall-library[vectordb]\n\n# All features\npip install wall-library[all]",
+          "input": "Installing extras...",
+          "output": "Successfully installed all extras"
+        },
+        {
+          "title": "Available Extras",
+          "type": "list",
+          "items": [
+            "**langchain**: LangChain framework integration",
+            "**langgraph**: LangGraph framework integration",
+            "**vectordb**: FAISS vector database support",
+            "**all**: All optional features combined"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "section",
+      "title": "Development Installation",
+      "subsections": [
+        {
+          "title": "Local Development",
+          "type": "code",
+          "code": "# Navigate to the library directory\ncd wall-library\n\n# Install in editable mode\npip3 install -e .",
+          "input": "Installing in development mode...",
+          "output": "Successfully installed wall-library in editable mode"
+        }
+      ]
+    },
+    {
+      "type": "section",
+      "title": "Verification",
+      "subsections": [
+        {
+          "title": "Test Installation",
+          "type": "code",
+          "code": "python3 examples/comprehensive_test.py",
+          "input": "Running tests...",
+          "output": "✅ ALL TESTS PASSED!"
+        }
+      ]
+    }
+  ]
+}

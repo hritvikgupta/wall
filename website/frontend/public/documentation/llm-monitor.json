@@ -1,0 +1,160 @@
+{
+  "id": "llm-monitor",
+  "title": "LLM Monitor - Tracking & Analytics",
+  "description": "Track all LLM interactions for monitoring and analytics",
+  "content": [
+    {
+      "type": "text",
+      "content": "**LLM Monitor** tracks all LLM interactions for monitoring and analytics. It records inputs, outputs, latency, success rates, and metadata, providing comprehensive observability for your LLM applications in production."
+    },
+    {
+      "type": "section",
+      "title": "Understanding LLM Monitoring",
+      "subsections": [
+        {
+          "title": "What is LLM Monitoring?",
+          "type": "text",
+          "content": "LLM Monitoring is the practice of tracking and analyzing all interactions with your LLM to understand:\n\n- **Performance**: How fast are responses? (latency)\n- **Quality**: Are responses good? (success rates, validation pass rates)\n- **Usage**: How is the system being used? (query patterns, volume)\n- **Issues**: What's going wrong? (errors, failures, edge cases)\n- **Trends**: How is performance changing over time? (improvements, degradations)\n\nMonitoring is essential for production LLM applications to ensure reliability, performance, and compliance."
+        },
+        {
+          "title": "Why Monitor LLM Interactions?",
+          "type": "list",
+          "items": [
+            "**Performance Optimization**: Identify slow queries and optimize",
+            "**Quality Assurance**: Track validation pass rates and response quality",
+            "**Debugging**: Trace issues with specific interactions",
+            "**Compliance**: Maintain audit trail for regulatory requirements",
+            "**Cost Management**: Track usage and costs",
+            "**User Experience**: Understand how users interact with your system",
+            "**Alerting**: Get notified when issues occur"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "section",
+      "title": "Complete Usage Guide",
+      "subsections": [
+        {
+          "title": "Step 1: Create Monitor",
+          "type": "code",
+          "code": "from wall_library.monitoring import LLMMonitor\n\n# Create monitor instance\nmonitor = LLMMonitor(\n    enable_telemetry=True  # Enable OpenTelemetry integration (default: True)\n)\n\n# Monitor is ready to track interactions",
+          "input": "Creating monitor...",
+          "output": "✅ Monitor created"
+        },
+        {
+          "title": "Step 2: Track LLM Calls",
+          "type": "code",
+          "code": "import time\nfrom openai import OpenAI\n\nclient = OpenAI(api_key=\"your-api-key\")\n\n# Track a single LLM call\nstart_time = time.time()\n\n# Call LLM\nresponse = client.chat.completions.create(\n    model=\"gpt-3.5-turbo\",\n    messages=[{\"role\": \"user\", \"content\": \"What are diabetes symptoms?\"}]\n).choices[0].message.content\n\nlatency = time.time() - start_time\n\n# Track the interaction\nmonitor.track_call(\n    input_data=\"What are diabetes symptoms?\",\n    output=response,\n    metadata={\n        \"model\": \"gpt-3.5-turbo\",\n        \"domain\": \"healthcare\",\n        \"user_id\": \"user123\",\n        \"session_id\": \"session456\"\n    },\n    latency=latency\n)\n\n# Interaction is now tracked and included in statistics",
+          "input": "Tracking LLM call...",
+          "output": "✅ Interaction tracked"
+        },
+        {
+          "title": "Step 3: Track Multiple Calls",
+          "type": "code",
+          "code": "# Track multiple interactions\nqueries = [\n    \"What are diabetes symptoms?\",\n    \"How should I take my medication?\",\n    \"What preventive screenings should I get?\"\n]\n\nfor i, query in enumerate(queries):\n    start_time = time.time()\n    \n    # Call LLM\n    response = llm_api_call(query)\n    \n    latency = time.time() - start_time\n    \n    # Track each interaction\n    monitor.track_call(\n        input_data=query,\n        output=response,\n        metadata={\n            \"model\": \"gpt-3.5-turbo\",\n            \"domain\": \"healthcare\",\n            \"query_index\": i,\n            \"validation_passed\": True  # From guard validation\n        },\n        latency=latency\n    )\n\n# All interactions are now tracked",
+          "input": "Tracking multiple calls...",
+          "output": "✅ 3 interactions tracked"
+        },
+        {
+          "title": "Step 4: Get Statistics",
+          "type": "code",
+          "code": "# Get monitoring statistics\nstats = monitor.get_stats()\n\n# stats contains:\n# {\n#     'total_interactions': 10,\n#     'metrics': {\n#         'total_calls': 10,\n#         'successful_calls': 9,\n#         'failed_calls': 1,\n#         'avg_latency': 0.45,\n#         'min_latency': 0.30,\n#         'max_latency': 0.60,\n#         'p95_latency': 0.55,\n#         'p99_latency': 0.58\n#     }\n# }\n\nprint(f\"Total Interactions: {stats['total_interactions']}\")\nprint(f\"Average Latency: {stats['metrics']['avg_latency']:.3f}s\")\nprint(f\"Success Rate: {stats['metrics']['successful_calls'] / stats['total_interactions']:.2%}\")",
+          "input": "Getting statistics...",
+          "output": "Total Interactions: 10\nAverage Latency: 0.450s\nSuccess Rate: 90.00%"
+        },
+        {
+          "title": "Step 5: Access Individual Interactions",
+          "type": "code",
+          "code": "# Access all tracked interactions\nfor interaction in monitor.interactions:\n    print(f\"Timestamp: {interaction['timestamp']}\")\n    print(f\"Input: {interaction['input'][:50]}...\")\n    print(f\"Output: {interaction['output'][:50]}...\")\n    print(f\"Latency: {interaction['latency']}s\")\n    print(f\"Metadata: {interaction['metadata']}\")\n    print(\"-\" * 50)\n\n# Filter interactions\nhealthcare_interactions = [\n    i for i in monitor.interactions\n    if i['metadata'].get('domain') == 'healthcare'\n]\n\nslow_interactions = [\n    i for i in monitor.interactions\n    if i['latency'] and i['latency'] > 1.0\n]",
+          "input": "Accessing interactions...",
+          "output": "✅ Interactions accessed and filtered"
+        }
+      ]
+    },
+    {
+      "type": "section",
+      "title": "Integration with Other Components",
+      "subsections": [
+        {
+          "title": "Monitoring with Wall Guard",
+          "type": "code",
+          "code": "from wall_library import WallGuard, OnFailAction\nfrom wall_library.monitoring import LLMMonitor\n\n# Create guard and monitor\nguard = WallGuard().use((SafetyValidator, {}, OnFailAction.EXCEPTION))\nmonitor = LLMMonitor()\n\n# Process query with monitoring\ndef process_with_monitoring(query: str):\n    start_time = time.time()\n    \n    try:\n        # Call LLM with guard\n        raw, validated, outcome = guard(\n            llm_api=llm_api_call,\n            prompt=query\n        )\n        \n        latency = time.time() - start_time\n        \n        # Track successful interaction\n        monitor.track_call(\n            input_data=query,\n            output=validated or raw,\n            metadata={\n                \"validation_passed\": outcome.validation_passed,\n                \"model\": \"gpt-3.5-turbo\",\n                \"domain\": \"healthcare\"\n            },\n            latency=latency\n        )\n        \n        return validated\n    except Exception as e:\n        # Track failed interaction\n        latency = time.time() - start_time\n        monitor.track_call(\n            input_data=query,\n            output=\"\",\n            metadata={\n                \"error\": str(e),\n                \"validation_passed\": False\n            },\n            latency=latency\n        )\n        raise",
+          "input": "Integrating with guard...",
+          "output": "✅ Monitoring integrated with guard"
+        },
+        {
+          "title": "Monitoring with RAG",
+          "type": "code",
+          "code": "from wall_library.rag import RAGRetriever\nfrom wall_library.monitoring import LLMMonitor\n\n# Setup RAG and monitor\nrag = RAGRetriever(...)\nmonitor = LLMMonitor()\n\n# Process query with RAG and monitoring\ndef process_with_rag(query: str):\n    start_time = time.time()\n    \n    # Retrieve context\n    retrieved = rag.retrieve(query, top_k=3)\n    context = retrieved[0]['document'] if retrieved else \"\"\n    \n    # Call LLM with context\n    prompt = f\"Context: {context}\\n\\nQuery: {query}\"\n    response = llm_api_call(prompt)\n    \n    latency = time.time() - start_time\n    \n    # Track with RAG metadata\n    monitor.track_call(\n        input_data=query,\n        output=response,\n        metadata={\n            \"rag_used\": True,\n            \"rag_score\": retrieved[0]['score'] if retrieved else None,\n            \"num_contexts\": len(retrieved)\n        },\n        latency=latency\n    )\n    \n    return response",
+          "input": "Integrating with RAG...",
+          "output": "✅ Monitoring integrated with RAG"
+        },
+        {
+          "title": "Monitoring with Scoring",
+          "type": "code",
+          "code": "from wall_library.scoring import ResponseScorer\nfrom wall_library.monitoring import LLMMonitor\n\n# Setup scorer and monitor\nscorer = ResponseScorer()\nmonitor = LLMMonitor()\n\n# Process and score with monitoring\ndef process_and_score(query: str, expected: str):\n    start_time = time.time()\n    \n    # Get LLM response\n    response = llm_api_call(query)\n    \n    # Score response\n    scores = scorer.score(response, expected)\n    aggregated = scorer.aggregate_score(scores)\n    \n    latency = time.time() - start_time\n    \n    # Track with scores\n    monitor.track_call(\n        input_data=query,\n        output=response,\n        metadata={\n            \"scores\": scores,\n            \"aggregated_score\": aggregated,\n            \"quality\": \"high\" if aggregated > 0.8 else \"medium\" if aggregated > 0.6 else \"low\"\n        },\n        latency=latency\n    )\n    \n    return response, scores",
+          "input": "Integrating with scoring...",
+          "output": "✅ Monitoring integrated with scoring"
+        }
+      ]
+    },
+    {
+      "type": "section",
+      "title": "Advanced Features",
+      "subsections": [
+        {
+          "title": "OpenTelemetry Integration",
+          "type": "code",
+          "code": "# Monitor automatically exports to OpenTelemetry if enabled\nmonitor = LLMMonitor(enable_telemetry=True)\n\n# Interactions are automatically exported as OpenTelemetry spans\n# This allows integration with:\n# - Jaeger (distributed tracing)\n# - Prometheus (metrics)\n# - Grafana (visualization)\n# - Other OpenTelemetry-compatible tools\n\n# You can configure OpenTelemetry exporter in your application\n# Monitor will automatically send traces",
+          "input": "Enabling telemetry...",
+          "output": "✅ OpenTelemetry integration enabled"
+        },
+        {
+          "title": "Filtering and Analysis",
+          "type": "code",
+          "code": "# Filter interactions by various criteria\n\n# By domain\nhealthcare_interactions = [\n    i for i in monitor.interactions\n    if i['metadata'].get('domain') == 'healthcare'\n]\n\n# By latency (slow queries)\nslow_queries = [\n    i for i in monitor.interactions\n    if i['latency'] and i['latency'] > 1.0\n]\n\n# By validation status\nfailed_validations = [\n    i for i in monitor.interactions\n    if not i['metadata'].get('validation_passed', True)\n]\n\n# By quality score\nhigh_quality = [\n    i for i in monitor.interactions\n    if i['metadata'].get('aggregated_score', 0) > 0.8\n]\n\n# Analyze patterns\navg_latency_by_domain = {}\nfor interaction in monitor.interactions:\n    domain = interaction['metadata'].get('domain', 'unknown')\n    if domain not in avg_latency_by_domain:\n        avg_latency_by_domain[domain] = []\n    if interaction['latency']:\n        avg_latency_by_domain[domain].append(interaction['latency'])\n\n# Compute averages\nfor domain, latencies in avg_latency_by_domain.items():\n    avg = sum(latencies) / len(latencies)\n    print(f\"{domain}: {avg:.3f}s average latency\")",
+          "input": "Analyzing interactions...",
+          "output": "healthcare: 0.450s average latency\nlegal: 0.520s average latency"
+        }
+      ]
+    },
+    {
+      "type": "section",
+      "title": "Best Practices",
+      "subsections": [
+        {
+          "title": "Recommendations",
+          "type": "list",
+          "items": [
+            "**Track all interactions**: Don't skip any - you need complete data for analysis",
+            "**Include rich metadata**: Add domain, user_id, session_id, model, etc. for better analysis",
+            "**Measure latency accurately**: Use high-precision timing for latency measurements",
+            "**Track failures**: Include failed interactions with error information",
+            "**Set up logging**: Use WallLogger alongside monitoring for detailed logs",
+            "**Export to analytics**: Use OpenTelemetry to export to your analytics platform",
+            "**Monitor trends**: Regularly check statistics to identify issues early",
+            "**Set up alerts**: Configure alerts for high latency, low success rates, etc."
+          ]
+        },
+        {
+          "title": "Metadata Best Practices",
+          "type": "text",
+          "content": "Include useful metadata in every tracked call:\n\n- **Model information**: Which model was used (gpt-3.5-turbo, gpt-4, etc.)\n- **Domain**: What domain is this for (healthcare, legal, finance)\n- **User context**: user_id, session_id for user-level analysis\n- **Validation status**: Did validation pass? (validation_passed: true/false)\n- **Quality scores**: Include scoring results if available\n- **RAG information**: Was RAG used? What was the retrieval score?\n- **Error information**: Include error details for failed interactions\n\nRich metadata enables powerful analysis and debugging."
+        },
+        {
+          "title": "Common Mistakes",
+          "type": "list",
+          "items": [
+            "❌ Not tracking all interactions (incomplete data)",
+            "❌ Not including metadata (can't analyze effectively)",
+            "❌ Not measuring latency accurately (misleading performance data)",
+            "❌ Not tracking failures (missing important error information)",
+            "❌ Not exporting to analytics (data stuck in memory)",
+            "❌ Not monitoring trends (missing gradual degradations)"
+          ]
+        }
+      ]
+    }
+  ]
+}

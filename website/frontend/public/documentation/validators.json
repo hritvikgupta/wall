@@ -1,0 +1,189 @@
+{
+  "id": "validators",
+  "title": "Validators - Custom Validation Rules",
+  "description": "Create reusable validation rules to check LLM responses against specific criteria",
+  "content": [
+    {
+      "type": "text",
+      "content": "**Validators** are the building blocks of Wall Library. They define the rules for validating LLM responses. You can create custom validators for any validation logic you need - safety checks, quality assurance, format validation, or domain-specific rules."
+    },
+    {
+      "type": "section",
+      "title": "Understanding Validators",
+      "subsections": [
+        {
+          "title": "What is a Validator?",
+          "type": "text",
+          "content": "A validator is a class that:\n\n1. **Inherits from `Validator`** - Base class providing validation infrastructure\n2. **Implements `_validate()` method** - Contains your validation logic\n3. **Returns `PassResult` or `FailResult`** - Indicates if validation passed or failed\n4. **Can be registered** - Using `@register_validator` decorator for reuse\n\nValidators are **reusable** - register once, use anywhere in your application."
+        },
+        {
+          "title": "Validator Lifecycle",
+          "type": "list",
+          "items": [
+            "**Initialization**: Validator is created with parameters (e.g., `min_length=10`)",
+            "**Registration**: Validator is registered with a unique name using `@register_validator`",
+            "**Validation**: `_validate()` method is called with the value to check",
+            "**Result**: Returns `PassResult` (success) or `FailResult` (failure) with error message",
+            "**OnFailAction**: If validation fails, the configured OnFailAction determines what happens"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "section",
+      "title": "Creating Your First Validator",
+      "subsections": [
+        {
+          "title": "Step 1: Import Required Classes",
+          "type": "code",
+          "code": "from wall_library.validator_base import Validator, register_validator\nfrom wall_library.classes.validation.validation_result import PassResult, FailResult",
+          "input": "Importing validator classes...",
+          "output": "✅ Classes imported"
+        },
+        {
+          "title": "Step 2: Create Validator Class",
+          "type": "code",
+          "code": "@register_validator(\"min_length\")\nclass MinLengthValidator(Validator):\n    \"\"\"Validator to ensure text meets minimum length requirement.\"\"\"\n    \n    def __init__(self, min_length: int = 10, **kwargs):\n        # require_rc=False means no .wallrc config file needed\n        super().__init__(require_rc=False, **kwargs)\n        self.min_length = min_length\n    \n    def _validate(self, value: str, metadata: dict) -> PassResult | FailResult:\n        \"\"\"\n        Validate that value meets minimum length.\n        \n        Args:\n            value: The text to validate\n            metadata: Optional metadata dictionary\n            \n        Returns:\n            PassResult if valid, FailResult if invalid\n        \"\"\"\n        # Check if value is a string\n        if not isinstance(value, str):\n            return FailResult(\n                error_message=\"Value must be a string\",\n                metadata=metadata\n            )\n        \n        # Check length\n        if len(value) < self.min_length:\n            return FailResult(\n                error_message=f\"Text too short: {len(value)} < {self.min_length} characters\",\n                metadata={**metadata, \"actual_length\": len(value), \"required_length\": self.min_length}\n            )\n        \n        # Validation passed\n        return PassResult(metadata=metadata)",
+          "input": "Creating validator...",
+          "output": "✅ Validator 'min_length' registered"
+        },
+        {
+          "title": "Step 3: Use Your Validator",
+          "type": "code",
+          "code": "from wall_library import WallGuard, OnFailAction\n\n# Create guard and use validator\nguard = WallGuard().use(\n    (MinLengthValidator, {\"min_length\": 20}, OnFailAction.EXCEPTION)\n)\n\n# Test validation\nresult = guard.validate(\"Short\")\n# This will fail because \"Short\" is only 5 characters\n\nresult = guard.validate(\"This is a longer text that passes\")\n# This will pass because it's longer than 20 characters",
+          "input": "Testing validator...",
+          "output": "✅ Validator working correctly"
+        }
+      ]
+    },
+    {
+      "type": "section",
+      "title": "Advanced Validator Examples",
+      "subsections": [
+        {
+          "title": "Example 1: Safety Validator (Healthcare)",
+          "type": "code",
+          "code": "@register_validator(\"healthcare_safety\")\nclass HealthcareSafetyValidator(Validator):\n    \"\"\"Blocks dangerous healthcare claims.\"\"\"\n    \n    def __init__(self, restricted_terms: list = None, **kwargs):\n        super().__init__(require_rc=False, **kwargs)\n        self.restricted_terms = restricted_terms or [\n            \"guaranteed cure\", \"miracle treatment\", \"instant relief\",\n            \"100% effective\", \"bypass doctor\", \"self-diagnose\"\n        ]\n    \n    def _validate(self, value: str, metadata: dict) -> PassResult | FailResult:\n        if not isinstance(value, str):\n            return FailResult(\n                error_message=\"Response must be a string\",\n                metadata=metadata\n            )\n        \n        value_lower = value.lower()\n        found_restricted = []\n        \n        # Check for restricted terms\n        for term in self.restricted_terms:\n            if term.lower() in value_lower:\n                found_restricted.append(term)\n        \n        if found_restricted:\n            return FailResult(\n                error_message=f\"Response contains restricted healthcare terms: {', '.join(found_restricted)}\",\n                metadata={\n                    **metadata,\n                    \"restricted_terms\": found_restricted,\n                    \"value_length\": len(value)\n                }\n            )\n        \n        return PassResult(metadata=metadata)",
+          "input": "Creating safety validator...",
+          "output": "✅ Healthcare safety validator registered"
+        },
+        {
+          "title": "Example 2: Format Validator (JSON)",
+          "type": "code",
+          "code": "import json\n\n@register_validator(\"valid_json\")\nclass ValidJSONValidator(Validator):\n    \"\"\"Validates that response is valid JSON.\"\"\"\n    \n    def __init__(self, **kwargs):\n        super().__init__(require_rc=False, **kwargs)\n    \n    def _validate(self, value: str, metadata: dict) -> PassResult | FailResult:\n        try:\n            # Try to parse as JSON\n            parsed = json.loads(value)\n            return PassResult(\n                metadata={**metadata, \"parsed_json\": parsed}\n            )\n        except json.JSONDecodeError as e:\n            return FailResult(\n                error_message=f\"Invalid JSON: {str(e)}\",\n                metadata={**metadata, \"json_error\": str(e)}\n            )",
+          "input": "Creating JSON validator...",
+          "output": "✅ JSON validator registered"
+        },
+        {
+          "title": "Example 3: Regex Pattern Validator",
+          "type": "code",
+          "code": "import re\n\n@register_validator(\"email_format\")\nclass EmailFormatValidator(Validator):\n    \"\"\"Validates email format using regex.\"\"\"\n    \n    def __init__(self, **kwargs):\n        super().__init__(require_rc=False, **kwargs)\n        # Email regex pattern\n        self.pattern = re.compile(\n            r\"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$\"\n        )\n    \n    def _validate(self, value: str, metadata: dict) -> PassResult | FailResult:\n        if not isinstance(value, str):\n            return FailResult(\n                error_message=\"Value must be a string\",\n                metadata=metadata\n            )\n        \n        if not self.pattern.match(value):\n            return FailResult(\n                error_message=f\"Invalid email format: {value}\",\n                metadata={**metadata, \"value\": value}\n            )\n        \n        return PassResult(metadata=metadata)",
+          "input": "Creating email validator...",
+          "output": "✅ Email format validator registered"
+        },
+        {
+          "title": "Example 4: Sentiment Validator",
+          "type": "code",
+          "code": "@register_validator(\"positive_sentiment\")\nclass PositiveSentimentValidator(Validator):\n    \"\"\"Ensures response has positive sentiment.\"\"\"\n    \n    def __init__(self, **kwargs):\n        super().__init__(require_rc=False, **kwargs)\n        # Simple positive words (in production, use a sentiment analysis library)\n        self.positive_words = {\"good\", \"great\", \"excellent\", \"wonderful\", \"amazing\"}\n        self.negative_words = {\"bad\", \"terrible\", \"awful\", \"horrible\", \"worst\"}\n    \n    def _validate(self, value: str, metadata: dict) -> PassResult | FailResult:\n        if not isinstance(value, str):\n            return FailResult(\n                error_message=\"Value must be a string\",\n                metadata=metadata\n            )\n        \n        value_lower = value.lower()\n        \n        # Check for negative words\n        found_negative = [word for word in self.negative_words if word in value_lower]\n        if found_negative:\n            return FailResult(\n                error_message=f\"Response contains negative sentiment: {', '.join(found_negative)}\",\n                metadata={**metadata, \"negative_words\": found_negative}\n            )\n        \n        # Check for positive words\n        found_positive = [word for word in self.positive_words if word in value_lower]\n        if not found_positive:\n            return FailResult(\n                error_message=\"Response lacks positive sentiment\",\n                metadata=metadata\n            )\n        \n        return PassResult(metadata=metadata)",
+          "input": "Creating sentiment validator...",
+          "output": "✅ Sentiment validator registered"
+        },
+        {
+          "title": "Example 5: TestSafetyValidator - Single Words and Multi-Word Phrases",
+          "type": "code",
+          "code": "import re\nfrom typing import Optional, List\n\n@register_validator(\"test_safety\")\nclass TestSafetyValidator(Validator):\n    \"\"\"Test safety validator that blocks unsafe keywords.\n    \n    Supports both single words (word-boundary matching) and \n    multi-word phrases (flexible spacing/punctuation matching).\n    \"\"\"\n    \n    def __init__(self, restricted_terms: Optional[List[str]] = None, **kwargs):\n        super().__init__(require_rc=False, **kwargs)\n        # Default restricted terms if none provided\n        self.restricted_terms = restricted_terms or [\n            'hack', 'steal', 'bomb', 'kill', 'ignore previous'\n        ]\n    \n    def _validate(self, value: Any, metadata: dict) -> PassResult | FailResult:\n        if not isinstance(value, str):\n            return PassResult(metadata=metadata)\n        \n        value_lower = value.lower()\n        found_terms = []\n        \n        for term in self.restricted_terms:\n            term_lower = term.lower()\n            \n            # Handle multi-word phrases differently\n            if ' ' in term_lower:\n                # For multi-word phrases, split into words\n                words = term_lower.split()\n                escaped_words = [re.escape(word) for word in words]\n                # Create pattern: word boundaries at start/end, \n                # flexible spacing/punctuation in middle\n                # Matches \"Hello, World!\", \"Hello World\", \"hello  world\"\n                pattern = r'\\b' + r'[\\s,\\.!?;:\\-]*'.join(escaped_words) + r'\\b'\n            else:\n                # For single words, use strict word boundary matching\n                # \"kill\" won't match \"skills\" or \"killing\"\n                escaped_term = re.escape(term_lower)\n                pattern = r'\\b' + escaped_term + r'\\b'\n            \n            if re.search(pattern, value_lower):\n                found_terms.append(term)\n        \n        if found_terms:\n            return FailResult(\n                error_message=f\"Unsafe content detected. Restricted terms found: {', '.join(found_terms)}\",\n                metadata=metadata\n            )\n        return PassResult(metadata=metadata)\n\n# Usage Examples:\n# 1. Single words - word boundary matching\n# {\"restricted_terms\": [\"kill\", \"hack\"]}\n# \"kill\" matches: \"I will kill you\" (blocked)\n# \"kill\" does NOT match: \"skills\", \"killing\", \"skillful\" (safe)\n\n# 2. Multi-word phrases - flexible matching\n# {\"restricted_terms\": [\"Hello World\", \"credit card\"]}\n# \"Hello World\" matches: \"Hello, World!\", \"hello world\", \"Hello  World\" (blocked)\n\n# 3. Empty config - uses defaults\n# {}  # Uses: ['hack', 'steal', 'bomb', 'kill', 'ignore previous']",
+          "input": "Creating TestSafetyValidator...",
+          "output": "✅ TestSafetyValidator registered"
+        },
+        {
+          "title": "TestSafetyValidator - Parameter Format",
+          "type": "text",
+          "content": "The `TestSafetyValidator` accepts a `restricted_terms` parameter in JSON format:\n\n**Format:**\n```json\n{\n  \"restricted_terms\": [\"term1\", \"term2\", \"multi word phrase\"]\n}\n```\n\n**Single Words:**\n- Uses **word-boundary matching** (`\\b` regex)\n- Matches whole words only, prevents false positives\n- Example: `\"kill\"` matches `\"I will kill you\"` but NOT `\"skills\"` or `\"killing\"`\n- Use single words for precise blocking without false positives\n\n**Multi-Word Phrases:**\n- Uses **flexible spacing/punctuation matching**\n- Allows spaces, commas, periods, and other punctuation between words\n- Example: `\"Hello World\"` matches:\n  - `\"Hello, World!\"`\n  - `\"hello world\"`\n  - `\"Hello  World\"` (multiple spaces)\n  - `\"Hello-World\"`\n- Use multi-word phrases to block specific phrases regardless of formatting\n\n**Empty Config:**\n- If you pass an empty object `{}`, it uses default terms:\n  - `['hack', 'steal', 'bomb', 'kill', 'ignore previous']`\n\n**Examples:**\n\n1. **Block single unsafe words:**\n```json\n{\n  \"restricted_terms\": [\"kill\", \"hack\", \"steal\"]\n}\n```\n\n2. **Block multi-word phrases:**\n```json\n{\n  \"restricted_terms\": [\"Hello World\", \"credit card\", \"social security\"]\n}\n```\n\n3. **Mix single words and phrases:**\n```json\n{\n  \"restricted_terms\": [\n    \"kill\", \n    \"hack\", \n    \"Hello World\", \n    \"credit card number\"\n  ]\n}\n```\n\n4. **Use defaults:**\n```json\n{}\n```\n\n**Important Notes:**\n- Single words are case-insensitive but use strict word boundaries\n- Multi-word phrases match flexibly with various spacing/punctuation\n- Terms are matched independently - if any term matches, validation fails\n- The validator returns all matched terms in the error message"
+        }
+      ]
+    },
+    {
+      "type": "section",
+      "title": "Understanding PassResult and FailResult",
+      "subsections": [
+        {
+          "title": "PassResult",
+          "type": "code",
+          "code": "from wall_library.classes.validation.validation_result import PassResult\n\n# Create a pass result\nresult = PassResult(\n    metadata={\n        \"validator_name\": \"min_length\",\n        \"checked_at\": \"2024-01-08T10:00:00Z\"\n    }\n)\n\n# Check if result is pass\nprint(result.is_pass)  # True\nprint(result.is_fail)  # False",
+          "input": "Creating PassResult...",
+          "output": "is_pass: True\nis_fail: False"
+        },
+        {
+          "title": "FailResult",
+          "type": "code",
+          "code": "from wall_library.classes.validation.validation_result import FailResult\n\n# Create a fail result with error message\nresult = FailResult(\n    error_message=\"Text too short: 5 < 10 characters\",\n    metadata={\n        \"validator_name\": \"min_length\",\n        \"actual_length\": 5,\n        \"required_length\": 10\n    }\n)\n\n# Check if result is fail\nprint(result.is_pass)  # False\nprint(result.is_fail)  # True\nprint(result.error_message)  # \"Text too short: 5 < 10 characters\"",
+          "input": "Creating FailResult...",
+          "output": "is_pass: False\nis_fail: True\nerror_message: Text too short: 5 < 10 characters"
+        },
+        {
+          "title": "Including Metadata",
+          "type": "text",
+          "content": "Both `PassResult` and `FailResult` accept a `metadata` dictionary. This is useful for:\n\n- **Debugging**: Store additional context about the validation\n- **Logging**: Include metadata in logs for analysis\n- **Monitoring**: Track validation metrics\n- **Error handling**: Provide context for error recovery\n\nAlways include relevant metadata in your validation results!"
+        }
+      ]
+    },
+    {
+      "type": "section",
+      "title": "Validator Registration and Discovery",
+      "subsections": [
+        {
+          "title": "Registering Validators",
+          "type": "code",
+          "code": "# Method 1: Using decorator (recommended)\n@register_validator(\"my_validator\")\nclass MyValidator(Validator):\n    pass\n\n# Method 2: Manual registration\nfrom wall_library.validator_base import _VALIDATOR_REGISTRY\n\n_VALIDATOR_REGISTRY[\"my_validator\"] = MyValidator\n\n# Method 3: Register with class name as alias\n@register_validator()  # Uses class name: \"myvalidator\"\nclass MyValidator(Validator):\n    pass",
+          "input": "Registering validators...",
+          "output": "✅ Validators registered"
+        },
+        {
+          "title": "Getting Registered Validators",
+          "type": "code",
+          "code": "from wall_library.validator_base import get_validator, _VALIDATOR_REGISTRY\n\n# Get validator by ID\nvalidator_cls = get_validator(\"min_length\")\nif validator_cls:\n    validator = validator_cls(min_length=10)\n\n# List all registered validators\nprint(\"Registered validators:\")\nfor name, validator_cls in _VALIDATOR_REGISTRY.items():\n    print(f\"  - {name}: {validator_cls.__name__}\")",
+          "input": "Getting validators...",
+          "output": "Registered validators:\n  - min_length: MinLengthValidator\n  - healthcare_safety: HealthcareSafetyValidator"
+        }
+      ]
+    },
+    {
+      "type": "section",
+      "title": "Best Practices for Validators",
+      "subsections": [
+        {
+          "title": "Design Principles",
+          "type": "list",
+          "items": [
+            "**Single Responsibility**: Each validator should check one thing (length, safety, format, etc.)",
+            "**Reusability**: Make validators generic and configurable via constructor parameters",
+            "**Clear Error Messages**: Provide specific, actionable error messages",
+            "**Include Metadata**: Always include relevant metadata in results",
+            "**Type Checking**: Validate input types before processing",
+            "**Performance**: Keep validation logic fast - avoid heavy computations"
+          ]
+        },
+        {
+          "title": "Common Patterns",
+          "type": "code",
+          "code": "# Pattern 1: Configurable thresholds\n@register_validator(\"threshold_validator\")\nclass ThresholdValidator(Validator):\n    def __init__(self, threshold: float = 0.5, **kwargs):\n        super().__init__(require_rc=False, **kwargs)\n        self.threshold = threshold\n    \n    def _validate(self, value, metadata):\n        score = self.compute_score(value)\n        if score < self.threshold:\n            return FailResult(\n                error_message=f\"Score {score} below threshold {self.threshold}\",\n                metadata={**metadata, \"score\": score}\n            )\n        return PassResult(metadata=metadata)\n\n# Pattern 2: Whitelist/Blacklist\n@register_validator(\"keyword_validator\")\nclass KeywordValidator(Validator):\n    def __init__(self, allowed_keywords: list = None, blocked_keywords: list = None, **kwargs):\n        super().__init__(require_rc=False, **kwargs)\n        self.allowed = set(allowed_keywords or [])\n        self.blocked = set(blocked_keywords or [])\n    \n    def _validate(self, value, metadata):\n        value_lower = value.lower()\n        \n        # Check blocked keywords\n        found_blocked = [kw for kw in self.blocked if kw in value_lower]\n        if found_blocked:\n            return FailResult(\n                error_message=f\"Contains blocked keywords: {found_blocked}\",\n                metadata={**metadata, \"blocked\": found_blocked}\n            )\n        \n        # Check allowed keywords (if whitelist is specified)\n        if self.allowed:\n            found_allowed = [kw for kw in self.allowed if kw in value_lower]\n            if not found_allowed:\n                return FailResult(\n                    error_message=\"No allowed keywords found\",\n                    metadata=metadata\n                )\n        \n        return PassResult(metadata=metadata)",
+          "input": "Creating pattern validators...",
+          "output": "✅ Pattern validators created"
+        }
+      ]
+    },
+    {
+      "type": "section",
+      "title": "Testing Your Validators",
+      "subsections": [
+        {
+          "title": "Unit Testing Validators",
+          "type": "code",
+          "code": "import unittest\nfrom wall_library.validator_base import Validator\n\nclass TestMinLengthValidator(unittest.TestCase):\n    def setUp(self):\n        self.validator = MinLengthValidator(min_length=10)\n    \n    def test_pass_valid(self):\n        \"\"\"Test that valid text passes.\"\"\"\n        result = self.validator.validate(\"This is a long enough text\")\n        self.assertTrue(result.is_pass)\n        self.assertIsNone(result.error_message)\n    \n    def test_fail_too_short(self):\n        \"\"\"Test that short text fails.\"\"\"\n        result = self.validator.validate(\"Short\")\n        self.assertTrue(result.is_fail)\n        self.assertIsNotNone(result.error_message)\n        self.assertIn(\"too short\", result.error_message.lower())\n    \n    def test_fail_non_string(self):\n        \"\"\"Test that non-string fails.\"\"\"\n        result = self.validator.validate(123)\n        self.assertTrue(result.is_fail)\n\nif __name__ == '__main__':\n    unittest.main()",
+          "input": "Running validator tests...",
+          "output": "✅ All tests passed"
+        }
+      ]
+    }
+  ]
+}

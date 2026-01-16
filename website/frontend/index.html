@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>LLMWall - LLM Security</title>
+  <link rel="icon" type="image/png" href="/favicon.png" />
+  <script src="https://cdn.tailwindcss.com?plugins=typography"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500;600&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Playfair+Display:wght@400;700;900&display=swap"
+    rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Söhne', 'Inter', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'],
+            mono: ['"JetBrains Mono"', 'monospace'],
+            serif: ['"Playfair Display"', 'serif'],
+            body: ['"Libre Baskerville"', 'serif'],
+          },
+          colors: {
+            // New Theme Colors
+            'ns-paper': '#F5F5F0',
+            'ns-ink': '#111111',
+
+            // Existing Theme Colors
+            background: '#13120b', // User specific dark warm
+            surface: '#1E1E1C', // Slightly lighter version of background
+            text: '#d7d6d5', // User specific light warm gray
+            muted: '#888888',
+            accent: '#ffffff',
+          },
+          animation: {
+            marquee: 'marquee 30s linear infinite',
+            'flow-right': 'flowRight 2s linear infinite',
+            'moving-gradient': 'movingGradient 5s linear infinite alternate',
+            'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+          },
+          keyframes: {
+            marquee: {
+              '0%': { transform: 'translateX(0)' },
+              '100%': { transform: 'translateX(-50%)' },
+            },
+            flowRight: {
+              '0%': { backgroundPosition: '0% 50%' },
+              '100%': { backgroundPosition: '100% 50%' },
+            },
+            movingGradient: {
+              '0%': { backgroundPosition: '0% 0%' },
+              '100%': { backgroundPosition: '100% 100%' },
+            }
+          },
+          boxShadow: {
+            'paper': '0 4px 20px rgba(0,0,0,0.1)',
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      background-color: #13120b;
+      color: #d7d6d5;
+    }
+
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: #111;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: #333;
+      border-radius: 4px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: #444;
+    }
+
+    .glass-card {
+      background: rgba(20, 20, 20, 0.6);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .flow-line {
+      background: linear-gradient(90deg, transparent 0%, #3b82f6 50%, transparent 100%);
+      background-size: 200% 100%;
+      animation: flowRight 2s linear infinite;
+    }
+
+    .dot-pattern {
+      background-image: radial-gradient(#ffffff15 1px, transparent 1px);
+      background-size: 24px 24px;
+    }
+
+    .moving-gradient-bg {
+      background-image: linear-gradient(to bottom right,
+          #3b82f6 0%, #8b5cf6 40%, #ec4899 60%, #ef4444 100%);
+      background-size: 200% 200%;
+      animation: movingGradient 5s linear infinite alternate;
+    }
+  </style>
+  <script type="importmap">
+{
+  "imports": {
+    "react-dom/": "https://esm.sh/react-dom@^19.2.3/",
+    "react/": "https://esm.sh/react@^19.2.3/",
+    "react": "https://esm.sh/react@^19.2.3",
+    "lucide-react": "https://esm.sh/lucide-react@^0.562.0"
+  }
+}
+</script>
+  <link rel="stylesheet" href="/index.css">
+</head>
+
+<body>
+  <div id="root"></div>
+  <script type="module" src="/index.tsx"></script>
+</body>
+
+</html>

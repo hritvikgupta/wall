@@ -1,0 +1,125 @@
+{
+  "id": "framework-wrappers",
+  "title": "Framework Wrappers - LangChain/LangGraph",
+  "description": "Make Wall Library guards usable in LangChain and LangGraph workflows",
+  "content": [
+    {
+      "type": "text",
+      "content": "**Framework Wrappers** make Wall Library guards usable in LangChain and LangGraph workflows. This allows you to use Wall Library validation in existing LangChain/LangGraph applications without rewriting your code."
+    },
+    {
+      "type": "section",
+      "title": "Understanding Framework Integration",
+      "subsections": [
+        {
+          "title": "What are Framework Wrappers?",
+          "type": "text",
+          "content": "Framework Wrappers convert Wall Library guards into formats that work with popular LLM frameworks:\n\n- **LangChain**: Convert guards to LangChain Runnables\n- **LangGraph**: Create nodes with guard validation\n- **LlamaIndex**: Guardrails chat/query engines\n- **MLflow**: MLflow instrumentation\n\nThis allows you to:\n- Use Wall Library in existing LangChain/LangGraph code\n- Add validation to chains and agents\n- Integrate with framework ecosystems\n- Keep using your favorite frameworks"
+        },
+        {
+          "title": "Why Use Framework Integration?",
+          "type": "list",
+          "items": [
+            "**Existing Code**: Use Wall Library without rewriting existing LangChain/LangGraph code",
+            "**Ecosystem**: Leverage LangChain/LangGraph tools and integrations",
+            "**Chains**: Add validation to LangChain chains",
+            "**Agents**: Validate agent responses",
+            "**Workflows**: Use in LangGraph workflows"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "section",
+      "title": "LangChain Integration - Complete Guide",
+      "subsections": [
+        {
+          "title": "Step 1: Install LangChain",
+          "type": "code",
+          "code": "# Install LangChain integration\npip install wall-library[langchain]\n\n# Or install separately\npip install langchain langchain-openai",
+          "input": "Installing LangChain...",
+          "output": "✅ LangChain installed"
+        },
+        {
+          "title": "Step 2: Create Guard",
+          "type": "code",
+          "code": "from wall_library import WallGuard, OnFailAction\nfrom wall_library.validator_base import Validator, register_validator\nfrom wall_library.classes.validation.validation_result import PassResult, FailResult\n\n# Create your validators (as usual)\n@register_validator(\"safety\")\nclass SafetyValidator(Validator):\n    def __init__(self, **kwargs):\n        super().__init__(require_rc=False, **kwargs)\n    \n    def _validate(self, value: str, metadata: dict):\n        if \"dangerous\" in value.lower():\n            return FailResult(error_message=\"Contains dangerous content\", metadata=metadata)\n        return PassResult(metadata=metadata)\n\n# Create guard\nguard = WallGuard().use(\n    (SafetyValidator, {}, OnFailAction.EXCEPTION)\n)",
+          "input": "Creating guard...",
+          "output": "✅ Guard created"
+        },
+        {
+          "title": "Step 3: Convert to LangChain Runnable",
+          "type": "code",
+          "code": "from wall_library.wrappers import LangChainWrapper\nfrom langchain_core.runnables import Runnable\n\n# Convert guard to LangChain Runnable\nwrapper = LangChainWrapper(guard)\nrunnable = wrapper.to_runnable()\n\n# runnable is now a LangChain Runnable that:\n# - Accepts input with 'prompt' and 'llm_api' keys\n# - Calls LLM with prompt\n# - Validates response with guard\n# - Returns validated output\n\nprint(f\"Type: {type(runnable)}\")  # <class 'langchain_core.runnables.Runnable'>",
+          "input": "Converting to Runnable...",
+          "output": "✅ Guard converted to LangChain Runnable"
+        },
+        {
+          "title": "Step 4: Use in LangChain Chain",
+          "type": "code",
+          "code": "from openai import OpenAI\nfrom langchain_core.runnables import RunnableLambda\n\n# Setup LLM\nclient = OpenAI(api_key=\"your-api-key\")\n\ndef llm_api_call(prompt: str, **kwargs):\n    response = client.chat.completions.create(\n        model=\"gpt-3.5-turbo\",\n        messages=[{\"role\": \"user\", \"content\": prompt}],\n        **kwargs\n    )\n    return response.choices[0].message.content\n\n# Use runnable\nresult = runnable.invoke({\n    \"prompt\": \"What are diabetes symptoms?\",\n    \"llm_api\": llm_api_call\n})\n\n# result contains validated output\nprint(f\"Validated output: {result['output']}\")\n\n# Use in LangChain chain\nchain = RunnableLambda(lambda x: {\"prompt\": x[\"query\"]}) | runnable\n\n# Invoke chain\nchain_result = chain.invoke({\"query\": \"What are diabetes symptoms?\"})",
+          "input": "Using in LangChain...",
+          "output": "✅ Validated output: Common symptoms of diabetes include..."
+        },
+        {
+          "title": "Step 5: Use in LangChain Agents",
+          "type": "code",
+          "code": "from langchain.agents import AgentExecutor, create_openai_tools_agent\nfrom langchain_openai import ChatOpenAI\n\n# Create agent with validated tool\nllm = ChatOpenAI(model=\"gpt-3.5-turbo\")\n\n# Create tool from runnable\nfrom langchain_core.tools import Tool\n\nvalidated_tool = Tool(\n    name=\"validated_llm\",\n    description=\"Validated LLM that ensures safe responses\",\n    func=lambda x: runnable.invoke({\"prompt\": x, \"llm_api\": llm_api_call})['output']\n)\n\n# Use in agent\n# agent = create_openai_tools_agent(llm, [validated_tool], ...)\n# executor = AgentExecutor(agent=agent, tools=[validated_tool])\n# result = executor.invoke({\"input\": \"What are diabetes symptoms?\"})",
+          "input": "Using in agent...",
+          "output": "✅ Agent using validated tool"
+        }
+      ]
+    },
+    {
+      "type": "section",
+      "title": "LangGraph Integration",
+      "subsections": [
+        {
+          "title": "What is LangGraph?",
+          "type": "text",
+          "content": "LangGraph is a framework for building stateful, multi-actor applications with LLMs. It uses graphs to define workflows.\n\n**Integration**: Wall Library guards can be used as nodes in LangGraph workflows, validating responses at specific points in the workflow."
+        },
+        {
+          "title": "LangGraph Integration Example",
+          "type": "code",
+          "code": "from wall_library import WallGuard\nfrom wall_library.wrappers import LangGraphWrapper\nfrom langgraph.graph import StateGraph\n\n# Create guard\nguard = WallGuard().use((SafetyValidator, {}, OnFailAction.EXCEPTION))\n\n# Convert to LangGraph wrapper\nwrapper = LangGraphWrapper(guard)\n\n# Create node with guard validation\nvalidate_node = wrapper.create_node(\"validate_node\")\n\n# Use in LangGraph workflow\n# graph = StateGraph(...)\n# graph.add_node(\"validate\", validate_node)\n# graph.add_edge(\"validate\", \"next_node\")\n\n# When workflow reaches validate node, guard validates the state",
+          "input": "Creating LangGraph node...",
+          "output": "✅ LangGraph node created with guard validation"
+        }
+      ]
+    },
+    {
+      "type": "section",
+      "title": "Other Framework Integrations",
+      "subsections": [
+        {
+          "title": "LlamaIndex Integration",
+          "type": "text",
+          "content": "LlamaIndex is a framework for building LLM applications with data.\n\n**Features**:\n- **Guardrails Chat Engine**: Chat engine with guard validation\n- **Guardrails Query Engine**: Query engine with guard validation\n- **Index Integration**: Works with LlamaIndex indices\n\n**Use when**: You're using LlamaIndex for RAG or data applications."
+        },
+        {
+          "title": "Databricks MLflow Integration",
+          "type": "text",
+          "content": "MLflow is a platform for managing ML lifecycle.\n\n**Features**:\n- **MLflow Instrumentation**: Track Wall Library operations in MLflow\n- **Experiment Tracking**: Track validation experiments\n- **Model Logging**: Log guards as MLflow models\n\n**Use when**: You're using MLflow for ML operations and want to track Wall Library operations."
+        }
+      ]
+    },
+    {
+      "type": "section",
+      "title": "Best Practices",
+      "subsections": [
+        {
+          "title": "Recommendations",
+          "type": "list",
+          "items": [
+            "**Use wrappers for existing code**: If you have LangChain/LangGraph code, use wrappers to add validation",
+            "**Validate at key points**: Add validation at important nodes in workflows",
+            "**Keep guard logic separate**: Define guards separately, then wrap for frameworks",
+            "**Test integration**: Test that wrappers work correctly with your framework code",
+            "**Handle errors**: Framework errors may differ from direct guard errors"
+          ]
+        }
+      ]
+    }
+  ]
+}

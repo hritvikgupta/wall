@@ -1,0 +1,82 @@
+{
+    "id": "image-context-manager",
+    "title": "Image Context Guard - Visual Validation",
+    "description": "Validate images against your defined context using Vision LLMs",
+    "content": [
+        {
+            "type": "text",
+            "content": "**Image Context Guard** extends the core Context Manager to handle visual inputs. By leveraging Vision LLMs (like GPT-4 Vision), it can analyze images to ensure they adhere to your domain constraints (e.g., ensuring uploaded medical images are actually X-rays, or checking for inappropriate content in a specific context)."
+        },
+        {
+            "type": "section",
+            "title": "How It Works",
+            "subsections": [
+                {
+                    "title": "VLLM Integration",
+                    "type": "text",
+                    "content": "Unlike text, which uses mathematical embeddings, image validation requires a **Vision Language Model (VLLM)**. The Image Context Guard sends the image and your defined context to the VLLM with a specific verification prompt.\n\nThe VLLM analyzes the image content and determines if it violates or aligns with your context."
+                },
+                {
+                    "title": "Workflow",
+                    "type": "list",
+                    "items": [
+                        "**Input**: Image (URL or Base64)",
+                        "**Context**: Your defined approved context strings",
+                        "**Analysis**: VLLM compares visual elements to context rules",
+                        "**Verdict**: Returns True (Valid) or False (Invalid)"
+                    ]
+                }
+            ]
+        },
+        {
+            "type": "section",
+            "title": "Usage Guide",
+            "subsections": [
+                {
+                    "title": "Step 1: Setup",
+                    "type": "code",
+                    "code": "from wall_library.nlp import ContextManager\nimport openai\n\n# Initialize Context Manager\ncm = ContextManager()\ncm.add_string_list([\"Images must be clear medical X-rays of the chest region.\"])\n\n# Define VLLM Call Wrapper (e.g., for OpenAI)\ndef openai_vllm_call(prompt, image):\n    client = openai.OpenAI()\n    response = client.chat.completions.create(\n        model=\"gpt-4-vision-preview\",\n        messages=[\n            {\n                \"role\": \"user\",\n                \"content\": [\n                    {\"type\": \"text\", \"text\": prompt},\n                    {\"type\": \"image_url\", \"image_url\": {\"url\": image}},\n                ],\n            }\n        ],\n        max_tokens=300,\n    )\n    return response.choices[0].message.content",
+                    "input": "Setting up VLLM wrapper...",
+                    "output": "✅ Setup complete"
+                },
+                {
+                    "title": "Step 2: Check Image",
+                    "type": "code",
+                    "code": "# Validate an image URL\nimage_url = \"https://example.com/chest_xray.jpg\"\n\nis_valid = cm.check_image_context(\n    image=image_url,\n    vllm_call=openai_vllm_call,\n    prompt_template=\"Context:\\n{context}\\n\\nIs this image a valid chest X-ray? Answer yes/no.\"\n)\n\nif is_valid:\n    print(\"✅ Valid Medical Image\")\nelse:\n    print(\"❌ Invalid Image Detected\")",
+                    "input": "Checking image...",
+                    "output": "✅ Valid Medical Image"
+                }
+            ]
+        },
+        {
+            "type": "section",
+            "title": "Validation Examples",
+            "subsections": [
+                {
+                    "title": "Allowed Image: Medical X-Ray",
+                    "type": "text",
+                    "content": "Context: **\"Images must be medical X-rays.\"**\n\nResult: **PASSED**"
+                },
+                {
+                    "title": "Example Allowed",
+                    "type": "image",
+                    "src": "/valid_xray_placeholder.png",
+                    "alt": "Valid X-Ray Example",
+                    "caption": "The VLLM clearly identifies the skeletal structure as a chest X-Ray, aligning with the context."
+                },
+                {
+                    "title": "Rejected Image: Landscape Photo",
+                    "type": "text",
+                    "content": "Context: **\"Images must be medical X-rays.\"**\n\nResult: **FAILED**"
+                },
+                {
+                    "title": "Example Rejected",
+                    "type": "image",
+                    "src": "/invalid_landscape_placeholder.png",
+                    "alt": "Invalid Landscape Example",
+                    "caption": "The VLLM identifies this as a nature scene, which violates the medical context constraint."
+                }
+            ]
+        }
+    ]
+}

@@ -1,0 +1,5 @@
+{
+  "name": "GuardWall - LLM Guardrailing",
+  "description": "A minimalist product site for an LLM guardrailing and validation library.",
+  "requestFramePermissions": []
+}

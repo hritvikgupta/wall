@@ -1,0 +1,244 @@
+{
+  "id": "context-manager",
+  "title": "Context Manager - NLP-Based Context Filtering",
+  "description": "Ensure LLM responses stay within approved context boundaries using NLP techniques",
+  "content": [
+    {
+      "type": "text",
+      "content": "**Context Manager** ensures LLM responses stay within approved context boundaries using NLP techniques. It uses keyword matching and semantic similarity to determine if a response is within your approved domain (e.g., healthcare, legal, finance)."
+    },
+    {
+      "type": "section",
+      "title": "Understanding Context Manager",
+      "subsections": [
+        {
+          "title": "What is Context Filtering?",
+          "type": "text",
+          "content": "Context filtering prevents LLM responses from going outside your approved domain. For example:\n\n- **Healthcare**: Block responses about cooking recipes when you only want medical information\n- **Legal**: Block responses about medical advice when you only want legal information\n- **Finance**: Block responses about entertainment when you only want financial advice\n\nContext Manager uses two techniques:\n1. **Keyword Matching**: Fast exact/fuzzy keyword matching\n2. **Semantic Similarity**: Embedding-based similarity using cosine similarity"
+        },
+        {
+          "title": "How It Works",
+          "type": "list",
+          "items": [
+            "**Define Approved Contexts**: Add keywords, strings, or load from files",
+            "**Check Similarity**: Uses embeddings and cosine similarity to compare response to approved contexts",
+            "**Keyword Matching**: Fast lookup for exact/fuzzy keyword matches",
+            "**Return Result**: True if within context (above threshold), False otherwise"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "section",
+      "title": "Basic Usage - Step by Step",
+      "subsections": [
+        {
+          "title": "Step 1: Import and Initialize",
+          "type": "code",
+          "code": "from wall_library.nlp import ContextManager\n\n# Create context manager\ncontext_manager = ContextManager()",
+          "input": "Initializing context manager...",
+          "output": "✅ Context manager created"
+        },
+        {
+          "title": "Step 2: Add Keywords",
+          "type": "code",
+          "code": "# Add keywords that define your domain\ncontext_manager.add_keywords([\n    \"healthcare\", \"medical\", \"doctor\", \"patient\", \"symptom\",\n    \"diagnosis\", \"treatment\", \"medication\", \"prescription\"\n])\n\n# You can add single keyword or list\ncontext_manager.add_keywords(\"healthcare\")\ncontext_manager.add_keywords([\"medical\", \"doctor\"])",
+          "input": "Adding keywords...",
+          "output": "✅ Keywords added to context"
+        },
+        {
+          "title": "Step 3: Add Approved Context Strings",
+          "type": "code",
+          "code": "# Add approved context strings (these are used for semantic similarity)\ncontext_manager.add_string_list([\n    \"General health information and wellness tips\",\n    \"Symptom description and when to seek medical attention\",\n    \"Medication information and dosage instructions from approved sources\",\n    \"Medical terminology and definitions\",\n    \"Healthcare facility information and appointment scheduling\"\n])",
+          "input": "Adding context strings...",
+          "output": "✅ Context strings added"
+        },
+        {
+          "title": "Step 4: Check Context",
+          "type": "code",
+          "code": "# Check if response is within context\nresponse = \"Common symptoms of diabetes include increased thirst and frequent urination.\"\n\n# threshold: minimum similarity score (0.0 to 1.0)\n# Default is 0.7 (70% similarity)\nis_valid = context_manager.check_context(response, threshold=0.7)\n\nif is_valid:\n    print(\"✅ Response is within approved healthcare context\")\nelse:\n    print(\"❌ Response is outside approved context boundaries\")",
+          "input": "Checking context...",
+          "output": "✅ Response is within approved healthcare context"
+        }
+      ]
+    },
+    {
+      "type": "section",
+      "title": "Loading Contexts from Files",
+      "subsections": [
+        {
+          "title": "Loading from Text File",
+          "type": "code",
+          "code": "# Create a text file: approved_contexts.txt\n# Content:\n# General health information and wellness tips\n# Symptom description and when to seek medical attention\n# Medication information and dosage instructions\n\n# Load from file\ncontext_manager.load_from_file(\"approved_contexts.txt\")\n\n# The file content is added as a context string\n# Keywords are automatically extracted from the text",
+          "input": "Loading from text file...",
+          "output": "✅ Contexts loaded from approved_contexts.txt"
+        },
+        {
+          "title": "Loading from JSON File",
+          "type": "code",
+          "code": "# Create a JSON file: contexts.json\n# Content:\n# [\n#   \"General health information\",\n#   \"Symptom description\",\n#   \"Medication information\"\n# ]\n# OR\n# {\n#   \"context1\": \"General health information\",\n#   \"context2\": \"Symptom description\"\n# }\n\n# Load from JSON\ncontext_manager.load_from_file(\"contexts.json\")\n\n# List format: each item becomes a context string\n# Dict format: each value becomes a context string",
+          "input": "Loading from JSON file...",
+          "output": "✅ Contexts loaded from contexts.json"
+        },
+        {
+          "title": "Loading from CSV File",
+          "type": "code",
+          "code": "# Create a CSV file: contexts.csv\n# Content:\n# General health information,Symptom description,Medication information\n# Preventive care,Chronic disease management,Mental health resources\n\n# Load from CSV\ncontext_manager.load_from_file(\"contexts.csv\")\n\n# Each row becomes context strings\n# Each cell in a row is added as a separate context",
+          "input": "Loading from CSV file...",
+          "output": "✅ Contexts loaded from contexts.csv"
+        }
+      ]
+    },
+    {
+      "type": "section",
+      "title": "Complete Healthcare Example",
+      "subsections": [
+        {
+          "title": "Full Implementation",
+          "type": "code",
+          "code": "from wall_library.nlp import ContextManager\n\n# Healthcare-approved context boundaries\nHEALTHCARE_APPROVED_CONTEXTS = [\n    \"General health information and wellness tips\",\n    \"Symptom description and when to seek medical attention\",\n    \"Medication information and dosage instructions from approved sources\",\n    \"Medical terminology and definitions\",\n    \"Healthcare facility information and appointment scheduling\",\n    \"Preventive care and screening recommendations\",\n    \"Chronic disease management and lifestyle modifications\"\n]\n\nHEALTHCARE_KEYWORDS = [\n    \"health\", \"medical\", \"doctor\", \"patient\", \"symptom\", \"diagnosis\",\n    \"treatment\", \"medication\", \"prescription\", \"therapy\", \"wellness\",\n    \"disease\", \"condition\", \"hospital\", \"clinic\", \"appointment\"\n]\n\n# Initialize context manager\ncontext_manager = ContextManager()\n\n# Add keywords\ncontext_manager.add_keywords(HEALTHCARE_KEYWORDS)\n\n# Add approved contexts\ncontext_manager.add_string_list(HEALTHCARE_APPROVED_CONTEXTS)\n\n# Test responses\nresponses = [\n    \"Common symptoms of diabetes include increased thirst and frequent urination.\",\n    \"Here's a delicious recipe for chocolate cake. Mix flour, sugar, eggs...\",\n    \"Blood pressure medications should be taken as prescribed by your doctor.\"\n]\n\n# Check each response\nfor response in responses:\n    is_valid = context_manager.check_context(response, threshold=0.7)\n    status = \"✅ IN\" if is_valid else \"❌ OUT\"\n    print(f\"{status}: {response[:50]}...\")",
+          "input": "Running healthcare context check...",
+          "output": "✅ IN: Common symptoms of diabetes include increased thirst...\n❌ OUT: Here's a delicious recipe for chocolate cake. Mix flour...\n✅ IN: Blood pressure medications should be taken as prescribed..."
+        }
+      ]
+    },
+    {
+      "type": "section",
+      "title": "Understanding Thresholds",
+      "subsections": [
+        {
+          "title": "What is a Threshold?",
+          "type": "text",
+          "content": "The threshold is a similarity score between 0.0 and 1.0 that determines if a response is \"close enough\" to your approved contexts.\n\n- **0.0**: Very lenient - almost everything passes\n- **0.5**: Moderate - responses need some similarity\n- **0.7**: Default - responses need good similarity (recommended)\n- **0.9**: Very strict - responses need very high similarity\n\n**How it works**:\n1. Context Manager computes cosine similarity between response and each approved context\n2. Takes the maximum similarity score\n3. Compares to threshold\n4. Returns True if max_similarity >= threshold"
+        },
+        {
+          "title": "Choosing the Right Threshold",
+          "type": "code",
+          "code": "# Test different thresholds\nresponse = \"Nutrition guidelines for diabetes management\"\n\n# Low threshold (lenient)\nresult_low = context_manager.check_context(response, threshold=0.5)\nprint(f\"Threshold 0.5: {result_low}\")  # More likely to pass\n\n# Medium threshold (default)\nresult_medium = context_manager.check_context(response, threshold=0.7)\nprint(f\"Threshold 0.7: {result_medium}\")  # Balanced\n\n# High threshold (strict)\nresult_high = context_manager.check_context(response, threshold=0.9)\nprint(f\"Threshold 0.9: {result_high}\")  # Less likely to pass\n\n# Recommendation: Start with 0.7, adjust based on your needs",
+          "input": "Testing thresholds...",
+          "output": "Threshold 0.5: True\nThreshold 0.7: True\nThreshold 0.9: False"
+        }
+      ]
+    },
+    {
+      "type": "section",
+      "title": "Advanced Usage",
+      "subsections": [
+        {
+          "title": "Combining Keyword and Semantic Matching",
+          "type": "text",
+          "content": "Context Manager uses both keyword matching and semantic similarity:\n\n1. **First**: Checks keyword matching (fast)\n   - If keywords match, returns True immediately\n   - No need to compute embeddings\n\n2. **Second**: If no keyword match, checks semantic similarity\n   - Computes embeddings for response and contexts\n   - Calculates cosine similarity\n   - Returns True if similarity >= threshold\n\nThis two-step approach is efficient: fast keyword check first, then more expensive semantic check if needed."
+        },
+        {
+          "title": "Batch Checking Multiple Responses",
+          "type": "code",
+          "code": "# Check multiple responses efficiently\nresponses = [\n    \"Diabetes symptoms include increased thirst and frequent urination.\",\n    \"This is a guaranteed cure for diabetes!\",\n    \"Blood pressure medications should be taken as prescribed.\",\n    \"Here's how to bake a chocolate cake.\"\n]\n\nresults = []\nfor response in responses:\n    is_valid = context_manager.check_context(response, threshold=0.7)\n    results.append({\n        \"response\": response,\n        \"is_valid\": is_valid,\n        \"status\": \"✅ IN\" if is_valid else \"❌ OUT\"\n    })\n\n# Print results\nfor result in results:\n    print(f\"{result['status']}: {result['response'][:50]}...\")",
+          "input": "Batch checking responses...",
+          "output": "✅ IN: Diabetes symptoms include increased thirst...\n❌ OUT: This is a guaranteed cure for diabetes!\n✅ IN: Blood pressure medications should be taken...\n❌ OUT: Here's how to bake a chocolate cake."
+        }
+      ]
+    },
+    {
+      "type": "section",
+      "title": "LLM Context Guard (Advanced)",
+      "subsections": [
+        {
+          "title": "Chain of Thought Verification",
+          "type": "text",
+          "content": "For highly nuanced contexts where NLP heuristics might fail, you can use the **LLM Context Guard**. This strategy strictly uses an LLM (Large Language Model) to verify user input against your context using a **Chain of Thought (CoT)** reasoning process.\n\nInstead of checking simple semantic similarity, the LLM analyzes the *intent* and *reasoning* behind the input."
+        },
+        {
+          "title": "Enabling LLM Strategy",
+          "type": "code",
+          "code": "# Use strategy='llm_check' to bypass NLP and use LLM exclusively\nis_valid = context_manager.check_context(\n    text=\"I need to access the encrypted patient database.\",\n    strategy=\"llm_check\",\n    llm_call=your_llm_function,\n    llm_prompt_template=None  # Uses built-in CoT prompt by default\n)",
+          "input": "Checking with LLM Guard...",
+          "output": "✅ Verified by LLM (Intent and Context Aligned)"
+        },
+        {
+          "title": "How CoT Works",
+          "type": "text",
+          "content": "The built-in Chain of Thought prompt forces the LLM to follow these steps:\n1. **Analyze Intent**: What is the user trying to do?\n2. **Context Alignment**: Does this align with allowed topics?\n3. **Constraint Check**: Are there any violations?\n4. **Final Verdict**: Returns a strict YES/NO.\n\nThis is more expensive (slower/costlier) but significantly more accurate for complex logic."
+        }
+      ]
+    },
+    {
+      "type": "section",
+      "title": "Integration with Wall Guard",
+      "subsections": [
+        {
+          "title": "Using Context Manager in Validation",
+          "type": "code",
+          "code": "from wall_library import WallGuard, OnFailAction\nfrom wall_library.validator_base import Validator, register_validator\nfrom wall_library.classes.validation.validation_result import PassResult, FailResult\n\n# Create a context validator\n@register_validator(\"context_check\")\nclass ContextValidator(Validator):\n    def __init__(self, context_manager: ContextManager, threshold: float = 0.7, **kwargs):\n        super().__init__(require_rc=False, **kwargs)\n        self.context_manager = context_manager\n        self.threshold = threshold\n    \n    def _validate(self, value: str, metadata: dict) -> PassResult | FailResult:\n        is_valid = self.context_manager.check_context(value, threshold=self.threshold)\n        \n        if not is_valid:\n            return FailResult(\n                error_message=f\"Response is outside approved context boundaries (threshold: {self.threshold})\",\n                metadata={**metadata, \"threshold\": self.threshold}\n            )\n        \n        return PassResult(metadata=metadata)\n\n# Use in guard\ncontext_manager = ContextManager()\ncontext_manager.add_keywords([\"healthcare\", \"medical\"])\n\nguard = WallGuard().use(\n    (ContextValidator, {\"context_manager\": context_manager, \"threshold\": 0.7}, OnFailAction.EXCEPTION)\n)\n\n# Now guard will block responses outside healthcare context\nresult = guard.validate(\"Here's a recipe for cake\")\n# This will fail because it's outside healthcare context",
+          "input": "Integrating context manager with guard...",
+          "output": "✅ Context validator integrated with guard"
+        }
+      ]
+    },
+    {
+      "type": "section",
+      "title": "Practical Examples for UI Configuration",
+      "subsections": [
+        {
+          "title": "Example 1: Healthcare Context Manager",
+          "type": "text",
+          "content": "**Keywords to Add (one at a time):**\n- `health`\n- `medical`\n- `doctor`\n- `patient`\n- `symptom`\n- `diagnosis`\n- `treatment`\n- `medication`\n- `prescription`\n- `therapy`\n- `wellness`\n- `disease`\n- `condition`\n- `hospital`\n- `clinic`\n\n**Approved Contexts to Add (one at a time):**\n- `General health information and wellness tips`\n- `Symptom description and when to seek medical attention`\n- `Medication information and dosage instructions from approved sources`\n- `Medical terminology and definitions`\n- `Healthcare facility information and appointment scheduling`\n- `Preventive care and screening recommendations`\n- `Chronic disease management and lifestyle modifications`\n\n**Recommended Threshold:** `0.7` (default)\n\n**Test Queries:**\n- ✅ Should pass: \"What are common symptoms of diabetes?\"\n- ✅ Should pass: \"How should I take my blood pressure medication?\"\n- ❌ Should fail: \"Here's a recipe for chocolate cake\"\n- ❌ Should fail: \"The weather today is sunny and warm\""
+        },
+        {
+          "title": "Example 2: Technology/Programming Context Manager",
+          "type": "text",
+          "content": "**Keywords to Add:**\n- `Python`\n- `programming`\n- `code`\n- `software`\n- `algorithm`\n- `API`\n- `database`\n- `framework`\n- `development`\n- `machine learning`\n- `AI`\n- `neural network`\n\n**Approved Contexts to Add:**\n- `Python programming language syntax and best practices`\n- `Software development methodologies and patterns`\n- `Machine learning algorithms and implementations`\n- `API design and integration`\n- `Database design and query optimization`\n- `Web development frameworks and tools`\n\n**Recommended Threshold:** `0.7`\n\n**Test Queries:**\n- ✅ Should pass: \"How do I create a Python function?\"\n- ✅ Should pass: \"Explain machine learning algorithms\"\n- ❌ Should fail: \"How to cook pasta\"\n- ❌ Should fail: \"Movie recommendations for tonight\""
+        },
+        {
+          "title": "Example 3: Legal Context Manager",
+          "type": "text",
+          "content": "**Keywords to Add:**\n- `legal`\n- `law`\n- `attorney`\n- `contract`\n- `litigation`\n- `regulation`\n- `compliance`\n- `jurisdiction`\n- `statute`\n- `lawsuit`\n- `court`\n- `judge`\n\n**Approved Contexts to Add:**\n- `Legal document review and analysis`\n- `Contract terms and conditions explanation`\n- `Regulatory compliance requirements`\n- `Legal research and case law`\n- `Attorney-client privilege and confidentiality`\n- `Litigation procedures and court processes`\n\n**Recommended Threshold:** `0.7`\n\n**Test Queries:**\n- ✅ Should pass: \"What are the key terms in this contract?\"\n- ✅ Should pass: \"Explain regulatory compliance requirements\"\n- ❌ Should fail: \"Medical advice for headaches\"\n- ❌ Should fail: \"Financial investment strategies\""
+        },
+        {
+          "title": "Example 4: Finance Context Manager",
+          "type": "text",
+          "content": "**Keywords to Add:**\n- `finance`\n- `investment`\n- `stock`\n- `portfolio`\n- `trading`\n- `market`\n- `asset`\n- `revenue`\n- `budget`\n- `accounting`\n- `financial planning`\n- `ROI`\n\n**Approved Contexts to Add:**\n- `Investment strategies and portfolio management`\n- `Financial planning and budgeting advice`\n- `Stock market analysis and trading`\n- `Accounting principles and financial statements`\n- `Risk management and asset allocation`\n- `Tax planning and financial regulations`\n\n**Recommended Threshold:** `0.7`\n\n**Test Queries:**\n- ✅ Should pass: \"How to build a diversified investment portfolio?\"\n- ✅ Should pass: \"Explain financial planning strategies\"\n- ❌ Should fail: \"How to fix a car engine\"\n- ❌ Should fail: \"Fashion trends for this season\""
+        },
+        {
+          "title": "Example 5: Educational Context Manager",
+          "type": "text",
+          "content": "**Keywords to Add:**\n- `education`\n- `learning`\n- `student`\n- `teacher`\n- `curriculum`\n- `course`\n- `assignment`\n- `study`\n- `academic`\n- `knowledge`\n- `teaching`\n- `pedagogy`\n\n**Approved Contexts to Add:**\n- `Educational content and curriculum development`\n- `Student learning strategies and study techniques`\n- `Teaching methodologies and pedagogical approaches`\n- `Academic writing and research methods`\n- `Course design and assessment strategies`\n- `Educational technology and online learning`\n\n**Recommended Threshold:** `0.7`\n\n**Test Queries:**\n- ✅ Should pass: \"How to improve study habits?\"\n- ✅ Should pass: \"Best practices for online teaching\"\n- ❌ Should fail: \"Restaurant recommendations\"\n- ❌ Should fail: \"Sports scores and highlights\""
+        },
+        {
+          "title": "Quick Start: Minimal Example",
+          "type": "text",
+          "content": "**For Quick Testing, try this minimal setup:**\n\n**Keywords (add 3-5 keywords):**\n- `Python`\n- `programming`\n- `code`\n\n**Approved Contexts (add 2-3 contexts):**\n- `Python programming language and software development`\n- `Code examples and programming tutorials`\n\n**Threshold:** `0.7`\n\n**Test it:**\n- Try: \"How do I write a Python function?\" (should pass)\n- Try: \"What's for dinner tonight?\" (should fail)\n\nThis minimal setup helps you understand how Context Manager works before configuring a full domain-specific context."
+        }
+      ]
+    },
+    {
+      "type": "section",
+      "title": "Best Practices",
+      "subsections": [
+        {
+          "title": "Recommendations",
+          "type": "list",
+          "items": [
+            "**Start with keywords**: Add domain-specific keywords first (fast matching)",
+            "**Add context strings**: Include detailed approved context strings for semantic matching",
+            "**Use appropriate threshold**: Start with 0.7, adjust based on false positives/negatives",
+            "**Load from files**: For large context lists, use file loading instead of hardcoding",
+            "**Combine with validators**: Use ContextValidator in your guard for automatic blocking",
+            "**Test thoroughly**: Test with edge cases to find the right threshold",
+            "**Monitor results**: Track which responses pass/fail to tune your contexts"
+          ]
+        },
+        {
+          "title": "Common Mistakes",
+          "type": "list",
+          "items": [
+            "❌ Using threshold that's too low (allows unrelated content)",
+            "❌ Using threshold that's too high (blocks valid content)",
+            "❌ Not adding enough context strings (poor semantic matching)",
+            "❌ Only using keywords (misses semantically similar but different wording)",
+            "❌ Not testing with real LLM responses"
+          ]
+        }
+      ]
+    }
+  ]
+}
